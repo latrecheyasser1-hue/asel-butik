@@ -949,3 +949,47 @@ body {
         gap: 15px;
     }
 }
+
+/* Custom Confirmation Modal Styling */
+.confirm-modal-content {
+    width: 90%;
+    max-width: 400px;
+    padding: 30px;
+    text-align: center;
+    border-radius: 12px;
+}
+
+.confirm-icon {
+    font-size: 48px;
+    color: var(--danger-color);
+    margin-bottom: 15px;
+}
+
+.confirm-modal-content h3 {
+    font-family: var(--font-family);
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 10px;
+}
+
+.confirm-modal-content p {
+    font-family: var(--font-family);
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 25px;
+    line-height: 1.6;
+}
+
+.confirm-modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.confirm-modal-actions .btn {
+    min-width: 100px;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+}

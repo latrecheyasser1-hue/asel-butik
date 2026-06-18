@@ -255,7 +255,8 @@ async function confirmAndPrintOrder(order) {
 
 // Action: Cancel Order (Restores Stock quantity)
 async function cancelOrder(order) {
-    if (!confirm(`هل أنت متأكد من إلغاء طلب الزبون: ${order.client_name}؟ (ستتم استعادة كمية المخزون)`)) {
+    const confirmed = await showConfirmModal('إلغاء الطلب', `هل أنت متأكد من إلغاء طلب الزبون: ${order.client_name}؟ (ستتم استعادة كمية المخزون)`);
+    if (!confirmed) {
         return;
     }
 
@@ -593,7 +594,8 @@ async function handleProductFormSubmit(e) {
 
 // Delete Product
 async function deleteProduct(product) {
-    if (!confirm(`هل أنت متأكد من رغبتك في حذف المنتج: "${product.name}" بشكل نهائي؟ سيتم حذف المخزون المرتبط به كذلك.`)) {
+    const confirmed = await showConfirmModal('حذف المنتج', `هل أنت متأكد من رغبتك في حذف المنتج: "${product.name}" بشكل نهائي؟ سيتم حذف المخزون المرتبط به كذلك.`);
+    if (!confirmed) {
         return;
     }
 
@@ -750,7 +752,8 @@ function renderAnalytics() {
 // Reset Demo Data inside Supabase
 function setupDemoReset() {
     resetDemoDataBtn.addEventListener('click', async () => {
-        if (!confirm('تحذير: سيتم مسح جميع المنتجات والطلبات الحالية واستعادة البيانات التجريبية الافتراضية. هل تريد الاستمرار؟')) {
+        const confirmed = await showConfirmModal('إعادة تعيين البيانات', 'تحذير: سيتم مسح جميع المنتجات والطلبات الحالية واستعادة البيانات التجريبية الافتراضية. هل تريد الاستمرار؟');
+        if (!confirmed) {
             return;
         }
 
@@ -903,6 +906,62 @@ function setupDemoReset() {
             alert('حدث خطأ أثناء استعادة البيانات.');
         } finally {
             adminLoader.style.display = 'none';
+        }
+    });
+}
+
+// Reusable Custom Confirmation Modal
+function showConfirmModal(title, message, isDanger = true) {
+    return new Promise((resolve) => {
+        const confirmModal = document.getElementById('confirmModal');
+        const titleEl = document.getElementById('confirmModalTitle');
+        const messageEl = document.getElementById('confirmModalMessage');
+        const yesBtn = document.getElementById('confirmModalYesBtn');
+        const noBtn = document.getElementById('confirmModalNoBtn');
+        const iconEl = confirmModal.querySelector('.confirm-icon i');
+
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+
+        if (isDanger) {
+            yesBtn.className = 'btn btn-danger';
+            iconEl.className = 'fa-solid fa-triangle-exclamation';
+            iconEl.parentElement.style.color = 'var(--danger-color)';
+        } else {
+            yesBtn.className = 'btn btn-primary';
+            iconEl.className = 'fa-solid fa-circle-info';
+            iconEl.parentElement.style.color = 'var(--accent-gold)';
+        }
+
+        // Show Modal
+        confirmModal.classList.add('active');
+
+        // Handlers
+        const handleYes = () => {
+            cleanup();
+            resolve(true);
+        };
+
+        const handleNo = () => {
+            cleanup();
+            resolve(false);
+        };
+
+        const cleanup = () => {
+            confirmModal.classList.remove('active');
+            yesBtn.removeEventListener('click', handleYes);
+            noBtn.removeEventListener('click', handleNo);
+            const backdrop = confirmModal.querySelector('.modal-backdrop');
+            if (backdrop) {
+                backdrop.removeEventListener('click', handleNo);
+            }
+        };
+
+        yesBtn.addEventListener('click', handleYes);
+        noBtn.addEventListener('click', handleNo);
+        const backdrop = confirmModal.querySelector('.modal-backdrop');
+        if (backdrop) {
+            backdrop.addEventListener('click', handleNo);
         }
     });
 }
