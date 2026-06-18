@@ -96,23 +96,50 @@ h1, h2, h3, h4 {
     align-items: center;
 }
 
-.logo-text-center {
-    font-family: var(--font-serif);
-    font-size: 28px;
+.logo-container-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none !important;
+    line-height: 0.9;
+    transition: var(--transition-smooth);
+}
+
+.logo-main-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 34px;
     font-weight: 700;
-    letter-spacing: 4px;
+    letter-spacing: 2px;
     color: var(--text-dark);
-    text-decoration: none;
     line-height: 1;
-    background: linear-gradient(135deg, var(--text-dark) 30%, var(--primary-gold) 100%);
+    background: linear-gradient(135deg, var(--text-dark) 20%, var(--primary-gold) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     transition: var(--transition-smooth);
 }
 
-.logo-text-center:hover {
-    letter-spacing: 6px;
-    opacity: 0.9;
+.logo-sub-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 10px;
+    letter-spacing: 5px;
+    color: var(--primary-gold);
+    font-weight: 600;
+    margin-top: 2px;
+    text-transform: uppercase;
+    opacity: 0.95;
+    transition: var(--transition-smooth);
+}
+
+.logo-container-center:hover .logo-main-title {
+    letter-spacing: 4px;
+    background: linear-gradient(135deg, var(--primary-gold) 0%, var(--hover-gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.logo-container-center:hover .logo-sub-title {
+    letter-spacing: 7px;
+    color: var(--hover-gold);
 }
 
 .nav-logo {
