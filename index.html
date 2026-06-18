@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>أسيل بوتيك | أناقة وفخامة تليق بكِ</title>
+    <!-- Cairo Font for Arabic, Playfair Display for numbers and elegance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Premium Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Main Style Sheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Floating Luxury Navbar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="#" class="logo-text">أسيل بوتيك</a>
+                <span class="logo-subtext">ASEL BUTIK</span>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="#hero" class="nav-link active">الرئيسية</a>
+                <a href="#products" class="nav-link">مجموعتنا</a>
+                <a href="admin.html" class="nav-link admin-btn"><i class="fa-solid fa-user-gear"></i> لوحة التحكم</a>
+            </nav>
+
+            <div class="nav-actions">
+                <button class="cart-trigger" id="cartTrigger" aria-label="سلة التسوق">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                    <span class="cart-count" id="cartCount">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="overflow-x-hidden w-full">
+        <!-- Hero Section -->
+        <section id="hero" class="hero-section">
+            <div class="hero-bg-overlay"></div>
+            <div class="hero-content">
+                <span class="hero-tag">أحدث تشكيلة صيفية فاخرة</span>
+                <h1 class="hero-title">تألقي بأبهى إطلالة مع أرقى فساتين النساء</h1>
+                <p class="hero-description">أزياء صُممت خصيصاً لتجمع بين الحداثة والأصالة الشرقية، باستخدام خامات النخبة من الحرير والمخمل الفاخر المطرز بالخيوط الذهبية.</p>
+                <div class="hero-ctas">
+                    <a href="#products" class="btn btn-gold">تسوقي الآن <i class="fa-solid fa-arrow-left"></i></a>
+                    <a href="#about" class="btn btn-outline">اكتشفي التشكيلة</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Bento Grid / Visual Intro -->
+        <section class="features-section">
+            <div class="section-header">
+                <h2>لماذا أسيل بوتيك؟</h2>
+                <div class="gold-divider"></div>
+            </div>
+            
+            <div class="bento-grid">
+                <div class="bento-card card-large">
+                    <div class="card-image" style="background-image: url('./images/kaftan_gold_1.png')"></div>
+                    <div class="card-overlay"></div>
+                    <div class="card-info">
+                        <h3>تصاميم ملكية خاصة</h3>
+                        <p>نصنع القطع بشغف وتطريز يدوي دقيق يناسب أرقى المناسبات.</p>
+                    </div>
+                </div>
+                
+                <div class="bento-card card-small">
+                    <div class="card-icon"><i class="fa-solid fa-gem"></i></div>
+                    <h3>جودة الخامات</h3>
+                    <p>حرير طبيعي 100% ومخمل ملكي يدوم طويلاً.</p>
+                </div>
+                
+                <div class="bento-card card-small">
+                    <div class="card-icon"><i class="fa-solid fa-truck-fast"></i></div>
+                    <h3>توصيل لـ 58 ولاية</h3>
+                    <p>توصيل سريع للمنزل أو لمكتب التوصيل في جميع ولايات الوطن.</p>
+                </div>
+                
+                <div class="bento-card card-medium">
+                    <div class="card-image" style="background-image: url('./images/dress_white_1.png')"></div>
+                    <div class="card-overlay"></div>
+                    <div class="card-info">
+                        <h3>قصات وتفاصيل جذابة</h3>
+                        <p>فساتين وأطقم تمنحك الثقة والراحة التامة.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Products Section -->
+        <section id="products" class="products-section">
+            <div class="section-header">
+                <h2>التشكيلة الفاخرة</h2>
+                <div class="gold-divider"></div>
+                <p class="section-subtitle">اكتشفي قطعنا الحصرية واختاري المقاس واللون المفضلين لديكِ</p>
+            </div>
+
+            <!-- Loader for products -->
+            <div id="productsLoader" class="loader-container">
+                <div class="luxury-spinner"></div>
+                <p>جاري تحميل القطع الفاخرة...</p>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="products-grid" id="productsGrid" style="display: none;">
+                <!-- Dynamically populated from Supabase -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <h2 class="logo-text">أسيل بوتيك</h2>
+                <p>متجر أزياء نسائية فاخرة تقدم تصاميم فريدة تعبر عن الأصالة والفخامة الملكية.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="فيسبوك"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#" aria-label="إنستغرام"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" aria-label="تيك توك"><i class="fa-brands fa-tiktok"></i></a>
+                </div>
+            </div>
+            <div class="footer-links">
+                <h3>روابط سريعة</h3>
+                <ul>
+                    <li><a href="#hero">الرئيسية</a></li>
+                    <li><a href="#products">مجموعتنا</a></li>
+                    <li><a href="admin.html">لوحة التحكم</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h3>تواصلوا معنا</h3>
+                <p><i class="fa-solid fa-location-dot"></i> الجزائر العاصمة، الجزائر</p>
+                <p><i class="fa-solid fa-phone"></i> +213 (0) 555 12 34 56</p>
+                <p><i class="fa-solid fa-envelope"></i> contact@aselbutik.com</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 أسيل بوتيك. جميع الحقوق محفوظة.</p>
+        </div>
+    </footer>
+
+    <!-- Product Quick View Modal -->
+    <div class="modal" id="productModal" role="dialog" aria-hidden="true">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose" aria-label="إغلاق">&times;</button>
+            <div class="product-modal-grid">
+                <!-- Gallery Section -->
+                <div class="product-modal-gallery">
+                    <div class="main-image-container">
+                        <img id="modalMainImage" src="" alt="صورة المنتج">
+                    </div>
+                    <div class="thumbnails-container" id="modalThumbnails">
+                        <!-- Dynamically populated thumbnails -->
+                    </div>
+                </div>
+                
+                <!-- Details Section -->
+                <div class="product-modal-details">
+                    <h2 id="modalProductName" class="product-title">اسم المنتج</h2>
+                    <div class="product-price" id="modalProductPrice">00.00 د.ج</div>
+                    <p class="product-desc" id="modalProductDesc">وصف المنتج الفاخر...</p>
+                    
+                    <div class="selectors-container">
+                        <!-- Color Selector -->
+                        <div class="selector-group">
+                            <span class="selector-label">اللون المتاح:</span>
+                            <div class="color-options" id="modalColorOptions">
+                                <!-- Colors will populate here -->
+                            </div>
+                        </div>
+
+                        <!-- Size Selector -->
+                        <div class="selector-group">
+                            <span class="selector-label">المقاس:</span>
+                            <div class="size-options" id="modalSizeOptions">
+                                <!-- Sizes will populate here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Stock Status -->
+                        <div class="stock-status" id="modalStockStatus">
+                            <!-- Stock status text -->
+                        </div>
+                    </div>
+
+                    <button class="btn btn-gold btn-block" id="addToCartBtn" disabled>
+                        <i class="fa-solid fa-cart-plus"></i> إضافة إلى السلة
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shopping Cart Modal -->
+    <div class="modal" id="cartModal" role="dialog" aria-hidden="true">
+        <div class="modal-backdrop"></div>
+        <div class="cart-modal-content">
+            <div class="cart-header">
+                <h2>سلة التسوق</h2>
+                <button class="modal-close-simple" id="cartClose">&times;</button>
+            </div>
+            
+            <div class="cart-body" id="cartBody">
+                <!-- Items list -->
+                <div class="cart-items" id="cartItemsList">
+                    <!-- Dynamically populated items -->
+                </div>
+                
+                <!-- Empty state -->
+                <div class="cart-empty-state" id="cartEmptyState">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                    <p>السلة فارغة حالياً</p>
+                    <a href="#products" class="btn btn-gold" id="startShopping">تسوقي الآن</a>
+                </div>
+            </div>
+            
+            <div class="cart-footer" id="cartFooter" style="display: none;">
+                <div class="cart-totals">
+                    <span>الإجمالي:</span>
+                    <span id="cartTotalPrice" class="price-amount">0.00 د.ج</span>
+                </div>
+                <button class="btn btn-gold btn-block" id="checkoutBtn">المتابعة لإتمام الطلب <i class="fa-solid fa-arrow-left"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div class="modal" id="checkoutModal" role="dialog" aria-hidden="true">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content checkout-modal-content">
+            <button class="modal-close" id="checkoutClose" aria-label="إغلاق">&times;</button>
+            <div class="checkout-container">
+                <h2>بيانات الزبون وإتمام الطلب</h2>
+                <div class="gold-divider"></div>
+                
+                <form id="checkoutForm" class="checkout-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="clientName">الاسم واللقب <span class="required">*</span></label>
+                            <input type="text" id="clientName" required placeholder="مثال: فاطمة بلحاج">
+                        </div>
+                        <div class="form-group">
+                            <label for="clientPhone">رقم الهاتف <span class="required">*</span></label>
+                            <input type="tel" id="clientPhone" required placeholder="مثال: 0661234567">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="clientWilaya">الولاية <span class="required">*</span></label>
+                            <div class="select-search-container">
+                                <select id="clientWilaya" required>
+                                    <option value="" disabled selected>اختر الولاية...</option>
+                                    <!-- Populated dynamically via JS -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="clientBaladiya">البلدية <span class="required">*</span></label>
+                            <input type="text" id="clientBaladiya" required placeholder="اسم البلدية">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>طريقة التوصيل <span class="required">*</span></label>
+                        <div class="delivery-options">
+                            <label class="delivery-option-card">
+                                <input type="radio" name="deliveryType" value="home" checked>
+                                <div class="option-content">
+                                    <i class="fa-solid fa-house-chimney"></i>
+                                    <span>توصيل للمنزل</span>
+                                    <small>التوصيل إلى عنوانك مباشرة</small>
+                                </div>
+                            </label>
+                            <label class="delivery-option-card">
+                                <input type="radio" name="deliveryType" value="office">
+                                <div class="option-content">
+                                    <i class="fa-solid fa-building"></i>
+                                    <span>مكتب شركة التوصيل</span>
+                                    <small>الاستلام من مكتب الولاية</small>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="order-summary-box">
+                        <h3>ملخص الطلب</h3>
+                        <div id="checkoutSummaryList">
+                            <!-- Items summarized -->
+                        </div>
+                        <div class="summary-total">
+                            <span>المجموع الكلي:</span>
+                            <span id="checkoutTotalAmount">0.00 د.ج</span>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-gold btn-block btn-lg" id="submitOrderBtn">
+                        <span id="btnNormalText"><i class="fa-solid fa-check"></i> تأكيد الطلب الآن</span>
+                        <span id="btnLoadingText" style="display: none;"><i class="fa-solid fa-spinner fa-spin"></i> جاري إرسال الطلب...</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal" id="successModal" role="dialog" aria-hidden="true">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content success-modal-content">
+            <div class="success-icon"><i class="fa-solid fa-circle-check"></i></div>
+            <h2>تم إرسال طلبك بنجاح!</h2>
+            <p class="success-message">شكراً لتسوقكِ من أسيل بوتيك. لقد استلمنا طلبكِ بنجاح وسيتصل بكِ فريق العمل قريباً لتأكيد تفاصيل التوصيل.</p>
+            <button class="btn btn-gold" id="successCloseBtn">العودة للمتجر</button>
+        </div>
+    </div>
+
+    <!-- Config and Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
