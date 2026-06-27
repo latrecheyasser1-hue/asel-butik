@@ -1068,7 +1068,7 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
         `).join('');
 
         return `
-            <div class="invoice-box" style="margin-bottom: 20px; text-align: right; direction: rtl; font-family: 'Cairo', sans-serif;">
+            <div class="invoice-box" style="margin-bottom: 5px; text-align: right; direction: rtl; font-family: 'Cairo', sans-serif;">
                 <div class="invoice-header" style="text-align: center;">
                     <h2 style="font-size: 18px; font-weight: bold; margin-bottom: 2px;">Asel Butik</h2>
                     <p style="font-size: 11px; color: #666; margin-bottom: 5px;">للأزياء النسائية الفاخرة</p>
@@ -1131,7 +1131,7 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
         const customerCopy = createInvoiceBoxHTML('نسخة الزبون (Customer Copy)');
         const shopCopy = createInvoiceBoxHTML('نسخة المحل (Shop Copy)');
         const divider = `
-            <div class="print-cut-line" style="border-top: 1px dashed #666; margin: 15px 0; text-align: center; font-size: 10px; color: #666; width: 100%;">
+            <div class="print-cut-line" style="border-top: 1px dashed #666; margin: 8px 0; text-align: center; font-size: 10px; color: #666; width: 100%;">
                 ✂------------------ نسخة المحل / نسخة الزبون ------------------✂
             </div>
         `;
