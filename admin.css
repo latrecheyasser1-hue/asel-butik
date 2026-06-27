@@ -818,31 +818,26 @@ body {
 }
 
 @page {
-    size: 80mm 300mm !important;
+    size: 80mm auto !important;
     margin: 0 !important;
 }
 
 @media print {
-    /* Hide everything on screen */
-    body * {
-        visibility: hidden;
+    /* Completely remove layout space of non-print elements */
+    body > * {
+        display: none !important;
     }
     
-    .print-only, .print-only * {
-        visibility: visible;
-    }
-    
-    .print-only {
+    body > #printInvoiceContainer, .print-only {
         display: block !important;
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 80mm;
-        height: auto;
-        margin: 0;
-        padding: 4mm 4mm 10mm 4mm;
-        box-sizing: border-box;
-        background-color: white;
+        visibility: visible !important;
+        position: static !important;
+        width: 80mm !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 4mm 4mm 10mm 4mm !important;
+        box-sizing: border-box !important;
+        background-color: white !important;
     }
 
     .invoice-box {
