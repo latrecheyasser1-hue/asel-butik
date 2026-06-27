@@ -1081,10 +1081,10 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
                     </div>
                 </div>
                 
-                <div class="invoice-divider" style="border-top: 1px solid #ddd; margin: 8px 0;"></div>
+                <div class="invoice-divider" style="border-top: 1px solid #ddd; margin: 4px 0;"></div>
                 
-                <div class="invoice-client-info" style="font-size: 12px; line-height: 1.6; text-align: right;">
-                    <h3 style="font-size: 13px; font-weight: bold; margin-bottom: 5px;">معلومات الزبون</h3>
+                <div class="invoice-client-info" style="font-size: 12px; line-height: 1.4; text-align: right;">
+                    <h3 style="font-size: 13px; font-weight: bold; margin-bottom: 3px;">معلومات الزبون</h3>
                     <div><strong>الاسم واللقب:</strong> <span>${clientName || '-'}</span></div>
                     <div><strong>رقم الهاتف:</strong> <span>${phone || '-'}</span></div>
                     ${(wilaya && wilaya !== 'المحل' && wilaya !== '-') ? `<div><strong>الولاية:</strong> <span>${wilaya}</span></div>` : ''}
@@ -1092,15 +1092,15 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
                     ${(deliveryType && deliveryType !== 'استلام من المحل' && deliveryType !== '-') ? `<div><strong>نوع التوصيل:</strong> <span>${deliveryType}</span></div>` : ''}
                 </div>
 
-                <div class="invoice-divider" style="border-top: 1px solid #ddd; margin: 8px 0;"></div>
+                <div class="invoice-divider" style="border-top: 1px solid #ddd; margin: 4px 0;"></div>
 
                 <table class="invoice-table" style="width: 100%; font-size: 11px; text-align: right; border-collapse: collapse;">
                     <thead>
                         <tr style="border-bottom: 1px solid #ddd; font-weight: bold;">
-                            <th style="padding: 4px 0; text-align: right;">المنتج</th>
-                            <th style="padding: 4px 0; text-align: right;">اللون</th>
-                            <th style="padding: 4px 0; text-align: right;">المقاس</th>
-                            <th style="padding: 4px 0; text-align: right;">المجموع</th>
+                            <th style="padding: 3px 0; text-align: right;">المنتج</th>
+                            <th style="padding: 3px 0; text-align: right;">اللون</th>
+                            <th style="padding: 3px 0; text-align: right;">المقاس</th>
+                            <th style="padding: 3px 0; text-align: right;">المجموع</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1108,19 +1108,19 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
                     </tbody>
                 </table>
 
-                <div class="invoice-divider" style="border-top: 1px solid #ddd; margin: 8px 0;"></div>
+                <div class="invoice-divider" style="border-top: 1px solid #ddd; margin: 4px 0;"></div>
 
                 ${totalHTML}
 
-                <div class="invoice-divider" style="border-top: 1px solid #ddd; margin: 8px 0;"></div>
+                <div class="invoice-divider" style="border-top: 1px solid #ddd; margin: 4px 0;"></div>
 
-                <div class="invoice-footer" style="text-align: center; font-size: 11px; line-height: 1.4; color: #555;">
-                    <div style="margin: 10px auto; padding: 6px 8px; border: 1px dashed #777; border-radius: 4px; background-color: #fcfcfc; color: #111; font-size: 10.5px; line-height: 1.5; text-align: center;">
-                        <div style="font-weight: bold; margin-bottom: 2px;">تنبيه:</div>
+                <div class="invoice-footer" style="text-align: center; font-size: 11px; line-height: 1.3; color: #555;">
+                    <div style="margin: 4px auto; padding: 4px 6px; border: 1px dashed #777; border-radius: 4px; background-color: #fcfcfc; color: #111; font-size: 10px; line-height: 1.4; text-align: center;">
+                        <div style="font-weight: bold; margin-bottom: 1px;">تنبيه:</div>
                         <div>السلع المباعة تُستبدل ولا تُرد خلال مدة أقصاها 48 ساعة من تاريخ الشراء، مع إحضار فاتورة الشراء.</div>
                     </div>
-                    <p style="margin: 4px 0;">شكراً لثقتكم بـ Asel Butik!</p>
-                    <p style="margin: 4px 0;">لأي استفسار يرجى الاتصال بنا على: ${websiteSettings && websiteSettings.phone_number ? websiteSettings.phone_number : '0555123456'}</p>
+                    <p style="margin: 2px 0;">شكراً لثقتكم بـ Asel Butik!</p>
+                    <p style="margin: 2px 0;">لأي استفسار يرجى الاتصال بنا على: ${websiteSettings && websiteSettings.phone_number ? websiteSettings.phone_number : '0555123456'}</p>
                 </div>
             </div>
         `;
