@@ -1127,6 +1127,7 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
     };
 
     const hideInfo = (clientName === 'زبون حضوري' && (!phone || phone === '-' || phone === ''));
+    const printPageStyle = `<style>@media print { @page { size: 80mm 350mm !important; margin: 0 !important; } body { margin: 0 !important; padding: 0 !important; } }</style>`;
     if (paidAmount !== null && remainingAmount !== null) {
         const customerCopy = createInvoiceBoxHTML('نسخة الزبون (Customer Copy)');
         const shopCopy = createInvoiceBoxHTML('نسخة المحل (Shop Copy)');
@@ -1135,14 +1136,14 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
                 ✂------------------ نسخة المحل / نسخة الزبون ------------------✂
             </div>
         `;
-        printContainer.innerHTML = customerCopy + divider + shopCopy;
+        printContainer.innerHTML = printPageStyle + customerCopy + divider + shopCopy;
         if (hideInfo) {
             printContainer.classList.add('hide-client-info');
         } else {
             printContainer.classList.remove('hide-client-info');
         }
     } else {
-        printContainer.innerHTML = createInvoiceBoxHTML('');
+        printContainer.innerHTML = printPageStyle + createInvoiceBoxHTML('');
         if (hideInfo) {
             printContainer.classList.add('hide-client-info');
         } else {
