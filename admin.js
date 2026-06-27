@@ -1127,7 +1127,7 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
     };
 
     const hideInfo = (clientName === 'زبون حضوري' && (!phone || phone === '-' || phone === ''));
-    const printPageStyle = `<style>@media print { body > * { display: none !important; } body > #printInvoiceContainer { display: block !important; visibility: visible !important; position: static !important; width: 80mm !important; } @page { size: 80mm auto !important; margin: 0 !important; } body { margin: 0 !important; padding: 0 !important; background: white !important; } }</style>`;
+    const printPageStyle = `<style>@media print { body > * { display: none !important; } body > #printInvoiceContainer { display: block !important; visibility: visible !important; position: static !important; width: 72mm !important; margin: 0 auto !important; } @page { size: 72mm auto !important; margin: 0 !important; } body { margin: 0 !important; padding: 0 !important; background: white !important; } }</style>`;
     if (paidAmount !== null && remainingAmount !== null) {
         const customerCopy = createInvoiceBoxHTML('نسخة الزبون (Customer Copy)');
         const shopCopy = createInvoiceBoxHTML('نسخة المحل (Shop Copy)');

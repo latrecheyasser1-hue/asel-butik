@@ -818,7 +818,7 @@ body {
 }
 
 @page {
-    size: 80mm auto !important;
+    size: 72mm auto !important;
     margin: 0 !important;
 }
 
@@ -832,9 +832,9 @@ body {
         display: block !important;
         visibility: visible !important;
         position: static !important;
-        width: 80mm !important;
+        width: 72mm !important;
         height: auto !important;
-        margin: 0 !important;
+        margin: 0 auto !important;
         padding: 4mm 4mm 10mm 4mm !important;
         box-sizing: border-box !important;
         background-color: white !important;
