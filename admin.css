@@ -818,6 +818,7 @@ body {
 }
 
 @page {
+    size: 80mm auto !important;
     margin: 0 !important;
 }
 
@@ -866,8 +867,8 @@ body {
         break-inside: auto !important;
     }
 
-    /* Prevent splitting individual sections across page cuts */
-    .invoice-header, .invoice-client-info, .invoice-table tr, .invoice-footer, .print-cut-line {
+    /* Ensure table rows do not break mid-row if possible, but allow continuous flow */
+    .invoice-table tr {
         page-break-inside: avoid !important;
         break-inside: avoid !important;
     }
