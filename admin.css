@@ -818,7 +818,7 @@ body {
 }
 
 @page {
-    size: 72mm auto !important;
+    size: 80mm auto !important;
     margin: 0 !important;
 }
 
@@ -828,13 +828,24 @@ body {
         display: none !important;
     }
     
+    body {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background-color: white !important;
+    }
+    
     body > #printInvoiceContainer, .print-only {
         display: block !important;
         visibility: visible !important;
         position: static !important;
         width: 72mm !important;
         height: auto !important;
-        margin: 0 auto !important;
+        margin: 0 !important;
         padding: 4mm 4mm 10mm 4mm !important;
         box-sizing: border-box !important;
         background-color: white !important;
