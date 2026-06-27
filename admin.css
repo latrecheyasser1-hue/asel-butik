@@ -818,8 +818,8 @@ body {
 }
 
 @page {
-    size: 80mm auto;
-    margin: 0;
+    size: 80mm 300mm !important;
+    margin: 0 !important;
 }
 
 @media print {
