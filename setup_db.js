@@ -25,6 +25,19 @@ async function run() {
     await client.query('DROP TABLE IF EXISTS orders CASCADE;');
     await client.query('DROP TABLE IF EXISTS stock CASCADE;');
     await client.query('DROP TABLE IF EXISTS products CASCADE;');
+    await client.query('DROP TABLE IF EXISTS suppliers CASCADE;');
+    await client.query('DROP TABLE IF EXISTS settings CASCADE;');
+
+    // Create suppliers table
+    console.log('Creating suppliers table...');
+    await client.query(`
+      CREATE TABLE suppliers (
+        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        name TEXT UNIQUE NOT NULL,
+        phone TEXT NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, now()) NOT NULL
+      );
+    `);
 
     // Create products table
     console.log('Creating products table...');
@@ -34,7 +47,11 @@ async function run() {
         name TEXT NOT NULL,
         description TEXT,
         price NUMERIC NOT NULL,
+        purchase_price NUMERIC,
         images TEXT[] DEFAULT '{}',
+        is_active BOOLEAN DEFAULT TRUE,
+        supplier_name TEXT,
+        supplier_phone TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, now()) NOT NULL
       );
     `);
@@ -92,40 +109,102 @@ async function run() {
       );
     `);
 
+    // Create settings table
+    console.log('Creating settings table...');
+    await client.query(`
+      CREATE TABLE settings (
+        id INT PRIMARY KEY DEFAULT 1,
+        hero_title TEXT NOT NULL,
+        hero_subtitle TEXT NOT NULL,
+        about_text TEXT NOT NULL,
+        phone_number TEXT NOT NULL,
+        email TEXT NOT NULL,
+        location_url TEXT NOT NULL,
+        facebook_url TEXT,
+        instagram_url TEXT,
+        tiktok_url TEXT,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, now()) NOT NULL,
+        CONSTRAINT only_one_row CHECK (id = 1)
+      );
+    `);
+
     // Disable RLS for all tables to allow direct access via Anon Key
     console.log('Disabling RLS on tables for easy access...');
     await client.query('ALTER TABLE products DISABLE ROW LEVEL SECURITY;');
     await client.query('ALTER TABLE stock DISABLE ROW LEVEL SECURITY;');
     await client.query('ALTER TABLE orders DISABLE ROW LEVEL SECURITY;');
     await client.query('ALTER TABLE invoices DISABLE ROW LEVEL SECURITY;');
+    await client.query('ALTER TABLE suppliers DISABLE ROW LEVEL SECURITY;');
+    await client.query('ALTER TABLE settings DISABLE ROW LEVEL SECURITY;');
+
+    // Insert demo settings
+    console.log('Inserting demo settings...');
+    await client.query(`
+      INSERT INTO settings (id, hero_title, hero_subtitle, about_text, phone_number, email, location_url, facebook_url, instagram_url, tiktok_url)
+      VALUES (
+        1,
+        'مرحباً بكم في أسيل بوتيك',
+        'للأزياء النسائية الفاخرة',
+        'تأسست أسيل بوتيك لتوفير أرقى التصاميم والملابس النسائية التقليدية والعصرية. نحرص دائماً على اختيار أجود الأقمشة وتوفير تجربة تسوق فريدة لزبائننا الكريم.',
+        '0555123456',
+        'contact@aselbutik.com',
+        'https://maps.google.com',
+        'https://facebook.com/aselbutik',
+        'https://instagram.com/aselbutik',
+        'https://tiktok.com/@aselbutik'
+      );
+    `);
+
+    // Insert demo suppliers
+    console.log('Inserting demo suppliers...');
+    await client.query(`
+      INSERT INTO suppliers (name, phone) VALUES
+      ('ورشة القفطان الملكي تلمسان', '0550112233'),
+      ('مورد الحرير الفاخر الجزائر', '0661445566'),
+      ('مصنع العباءات التركية وهران', '0770998877'),
+      ('مستورد الأطقم الفاخرة قسنطينة', '0555334455')
+      ON CONFLICT (name) DO NOTHING;
+    `);
 
     // Insert luxury products
     console.log('Inserting demo products...');
     const insertProductsQuery = `
-      INSERT INTO products (name, description, price, images) VALUES
+      INSERT INTO products (name, description, price, purchase_price, images, supplier_name, supplier_phone) VALUES
       (
         'فستان القفطان الملكي الذهبي',
         'قفطان فاخر مصمم بأرقى خيوط الحرير والذهب، مطرز يدوياً بحرفية عالية ليمنحك إطلالة ملكية في المناسبات السعيدة.',
         18900,
-        ARRAY['./images/kaftan_gold_1.png', './images/kaftan_gold_2.png']
+        11000,
+        ARRAY['./images/kaftan_gold_1.png', './images/kaftan_gold_2.png'],
+        'ورشة القفطان الملكي تلمسان',
+        '0550112233'
       ),
       (
         'فستان السهرة الحريري الأبيض',
         'فستان سهرة ناعم وأنيق مصنوع من قماش الحرير الطبيعي ذو اللمعة الساحرة، مثالي للأعراس والمناسبات الخاصة.',
         15500,
-        ARRAY['./images/dress_white_1.png', './images/dress_white_2.png']
+        9000,
+        ARRAY['./images/dress_white_1.png', './images/dress_white_2.png'],
+        'مورد الحرير الفاخر الجزائر',
+        '0661445566'
       ),
       (
         'عباءة النخبة المخملية السوداء',
         'عباءة كلاسيكية فاخرة من المخمل الفاخر المزين بتطريزات ذهبية مميزة على الأكمام والحاشية، تجمع بين الاحتشام والأناقة.',
         11200,
-        ARRAY['./images/abaya_black_1.png', './images/abaya_black_2.png']
+        6500,
+        ARRAY['./images/abaya_black_1.png', './images/abaya_black_2.png'],
+        'مصنع العباءات التركية وهران',
+        '0770998877'
       ),
       (
         'طقم فستان وسترة البيج الفاخر',
         'طقم مكون من قطعتين فستان ناعم مع سترة مطرزة بتفاصيل دقيقة وراقية باللون البيج والذهبي الخفيف.',
         13800,
-        ARRAY['./images/dress_beige_1.png', './images/dress_beige_2.png']
+        8000,
+        ARRAY['./images/dress_beige_1.png', './images/dress_beige_2.png'],
+        'مستورد الأطقم الفاخرة قسنطينة',
+        '0555334455'
       )
       RETURNING id, name;
     `;

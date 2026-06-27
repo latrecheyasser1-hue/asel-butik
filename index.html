@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>أسيل بوتيك | أناقة وفخامة تليق بكِ</title>
+    <title>ASEL BUTIK | أناقة وفخامة تليق بكِ</title>
     <!-- Cairo Font for Arabic, Playfair Display for numbers and elegance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,6 +12,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Main Style Sheet -->
     <link rel="stylesheet" href="style.css">
+    
+    <!-- PWA Manifest & App Icons -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="images/logo-192.png">
+    <link rel="icon" type="image/png" href="images/logo-192.png">
 </head>
 <body>
     <!-- Floating Luxury Navbar -->
@@ -20,13 +27,13 @@
             <div class="nav-right-side"></div>
             
             <div class="nav-logo-center">
-                <a href="#" class="logo-container-center">
+                <div class="logo-container-center">
                     <span class="logo-main-title">ASEL</span>
-                    <span class="logo-sub-title">— BUTIK —</span>
-                </a>
+                    <span class="logo-sub-title">BUTIK</span>
+                </div>
             </div>
 
-            <div class="nav-actions">
+            <div class="nav-actions" style="display: none;">
                 <button class="cart-trigger" id="cartTrigger" aria-label="سلة التسوق">
                     <i class="fa-solid fa-bag-shopping"></i>
                     <span class="cart-count" id="cartCount">0</span>
@@ -38,14 +45,11 @@
     <main class="overflow-x-hidden w-full">
         <!-- Hero Section -->
         <section id="hero" class="hero-section">
-            <div class="hero-bg-overlay"></div>
             <div class="hero-content">
-                <span class="hero-tag">أحدث تشكيلة صيفية فاخرة</span>
-                <h1 class="hero-title">تألقي بأبهى إطلالة مع أرقى فساتين النساء</h1>
-                <p class="hero-description">أزياء صُممت خصيصاً لتجمع بين الحداثة والأصالة الشرقية، باستخدام خامات النخبة من الحرير والمخمل الفاخر المطرز بالخيوط الذهبية.</p>
+                <span class="hero-tag" id="heroSubtitle">أحدث تشكيلة صيفية فاخرة</span>
+                <h1 class="hero-title" id="heroTitle">تألقي بأبهى إطلالة مع أرقى فساتين النساء</h1>
                 <div class="hero-ctas">
                     <a href="#products" class="btn btn-gold">تسوقي الآن <i class="fa-solid fa-arrow-left"></i></a>
-                    <a href="#about" class="btn btn-outline">اكتشفي التشكيلة</a>
                 </div>
             </div>
         </section>
@@ -59,10 +63,28 @@
                 <p class="section-subtitle">اكتشفي قطعنا الحصرية واختاري المقاس واللون المفضلين لديكِ</p>
             </div>
 
-            <!-- Loader for products -->
-            <div id="productsLoader" class="loader-container">
-                <div class="luxury-spinner"></div>
-                <p>جاري تحميل القطع الفاخرة...</p>
+            <!-- Loader for products (Skeleton Grid) -->
+            <div id="productsLoader" class="products-skeleton-grid">
+                <div class="skeleton-card">
+                    <div class="skeleton-image"></div>
+                    <div class="skeleton-text title"></div>
+                    <div class="skeleton-text price"></div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton-image"></div>
+                    <div class="skeleton-text title"></div>
+                    <div class="skeleton-text price"></div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton-image"></div>
+                    <div class="skeleton-text title"></div>
+                    <div class="skeleton-text price"></div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton-image"></div>
+                    <div class="skeleton-text title"></div>
+                    <div class="skeleton-text price"></div>
+                </div>
             </div>
 
             <!-- Products Grid -->
@@ -76,12 +98,12 @@
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-brand">
-                <h2 class="logo-text">أسيل بوتيك</h2>
-                <p>متجر أزياء نسائية فاخرة تقدم تصاميم فريدة تعبر عن الأصالة والفخامة الملكية.</p>
+                <h2 class="logo-text" style="font-family: 'Playfair Display', serif; letter-spacing: 2px;">ASEL BUTIK</h2>
+                <p id="footerAboutText">متجر أزياء نسائية فاخرة تقدم تصاميم فريدة تعبر عن الأصالة والفخامة الملكية.</p>
                 <div class="social-links">
-                    <a href="#" aria-label="فيسبوك"><i class="fa-brands fa-facebook-f"></i></a>
-                    <a href="#" aria-label="إنستغرام"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="#" aria-label="تيك توك"><i class="fa-brands fa-tiktok"></i></a>
+                    <a href="#" id="footerFacebookLink" target="_blank" aria-label="فيسبوك" style="display: none;"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#" id="footerInstagramLink" target="_blank" aria-label="إنستغرام" style="display: none;"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" id="footerTiktokLink" target="_blank" aria-label="تيك توك" style="display: none;"><i class="fa-brands fa-tiktok"></i></a>
                 </div>
             </div>
             <div class="footer-links">
@@ -93,13 +115,13 @@
             </div>
             <div class="footer-contact">
                 <h3>تواصلوا معنا</h3>
-                <p><i class="fa-solid fa-location-dot"></i> الجزائر العاصمة، الجزائر</p>
-                <p><i class="fa-solid fa-phone"></i> +213 (0) 555 12 34 56</p>
-                <p><i class="fa-solid fa-envelope"></i> contact@aselbutik.com</p>
+                <p><a href="#" id="footerLocationLink" target="_blank" style="color: inherit; text-decoration: none;"><i class="fa-solid fa-location-dot"></i> موقع المحل (Google Maps)</a></p>
+                <p><a href="#" id="footerPhoneLink" style="color: inherit; text-decoration: none;"><i class="fa-solid fa-phone"></i> <span id="footerPhone">+213 (0) 555 12 34 56</span></a></p>
+                <p><a href="#" id="footerEmailLink" style="color: inherit; text-decoration: none;"><i class="fa-solid fa-envelope"></i> <span id="footerEmail">contact@aselbutik.com</span></a></p>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2026 أسيل بوتيك. جميع الحقوق محفوظة.</p>
+            <p>&copy; 2026 ASEL BUTIK. جميع الحقوق محفوظة.</p>
         </div>
     </footer>
 
@@ -274,14 +296,52 @@
         <div class="modal-content success-modal-content">
             <div class="success-icon"><i class="fa-solid fa-circle-check"></i></div>
             <h2>تم إرسال طلبك بنجاح!</h2>
-            <p class="success-message">شكراً لتسوقكِ من أسيل بوتيك. لقد استلمنا طلبكِ بنجاح وسيتصل بكِ فريق العمل قريباً لتأكيد تفاصيل التوصيل.</p>
+            <p class="success-message">شكراً لتسوقكِ من ASEL BUTIK. لقد استلمنا طلبكِ بنجاح وسيتصل بكِ فريق العمل قريباً لتأكيد تفاصيل التوصيل.</p>
             <button class="btn btn-gold" id="successCloseBtn">العودة للمتجر</button>
         </div>
     </div>
 
     <!-- Config and Supabase CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.js"></script>
+    <script>
+        if (typeof supabase === 'undefined') {
+            console.warn("Critical CDN libraries failed to load. Purging Service Worker cache and reloading...");
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(regs => {
+                    for (let reg of regs) reg.unregister();
+                });
+            }
+            if ('caches' in window) {
+                caches.keys().then(keys => {
+                    for (let key of keys) caches.delete(key);
+                }).then(() => {
+                    window.location.reload();
+                });
+            }
+        }
+    </script>
     <script src="config.js"></script>
-    <script src="app.js"></script>
+    <script src="app.js?v=2"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            const isElectron = navigator.userAgent.toLowerCase().includes('electron');
+            if (isElectron) {
+                // Unregister any active service worker in Electron
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                    for (let registration of registrations) {
+                        registration.unregister().then(() => {
+                            console.log('Unregistered service worker in Electron');
+                        });
+                    }
+                });
+            } else {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('sw.js')
+                        .then(reg => console.log('Service Worker registered successfully:', reg.scope))
+                        .catch(err => console.error('Service Worker registration failed:', err));
+                });
+            }
+        }
+    </script>
 </body>
 </html>

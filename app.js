@@ -1,3 +1,185 @@
+// Premium Custom Alert Override
+(function() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .custom-alert-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .custom-alert-backdrop.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .custom-alert-card {
+            background: #ffffff;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 420px;
+            padding: 32px 24px;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transform: scale(0.9);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            border-top: 6px solid #c5a880;
+            direction: rtl;
+        }
+        .custom-alert-backdrop.active .custom-alert-card {
+            transform: scale(1);
+        }
+        .custom-alert-icon-container {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+            font-size: 32px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .custom-alert-title {
+            font-family: 'Cairo', sans-serif;
+            font-size: 20px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+        .custom-alert-text {
+            font-family: 'Cairo', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            color: #475569;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            white-space: pre-line;
+        }
+        .custom-alert-button {
+            font-family: 'Cairo', sans-serif;
+            background-color: #2c3e50;
+            color: #ffffff;
+            border: none;
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            outline: none;
+            width: 100%;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .custom-alert-button:hover {
+            background-color: #c5a880;
+            box-shadow: 0 10px 15px -3px rgba(197, 168, 128, 0.3);
+        }
+        .custom-alert-button:active {
+            transform: scale(0.97);
+        }
+    `;
+    document.head.appendChild(style);
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'custom-alert-backdrop';
+    
+    const card = document.createElement('div');
+    card.className = 'custom-alert-card';
+    
+    const iconContainer = document.createElement('div');
+    iconContainer.className = 'custom-alert-icon-container';
+    const icon = document.createElement('i');
+    iconContainer.appendChild(icon);
+    
+    const title = document.createElement('div');
+    title.className = 'custom-alert-title';
+    
+    const text = document.createElement('div');
+    text.className = 'custom-alert-text';
+    
+    const btn = document.createElement('button');
+    btn.className = 'custom-alert-button';
+    btn.textContent = 'موافق';
+    
+    card.appendChild(iconContainer);
+    card.appendChild(title);
+    card.appendChild(text);
+    card.appendChild(btn);
+    backdrop.appendChild(card);
+    
+    if (document.body) {
+        document.body.appendChild(backdrop);
+    } else {
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.appendChild(backdrop);
+        });
+    }
+
+    let currentCallback = null;
+
+    function getIconAndColorForMessage(msg) {
+        msg = msg.toLowerCase();
+        if (msg.includes('نجاح') || msg.includes('تمت') || msg.includes('تم ') || msg.includes('موافق') || msg.includes('بنجاح')) {
+            return { iconClass: 'fa-solid fa-circle-check', color: '#10b981', bg: 'rgba(16, 185, 129, 0.12)', title: 'عملية ناجحة' };
+        }
+        if (msg.includes('خطأ') || msg.includes('فشل') || msg.includes('غير صالحة') || msg.includes('لا يمكنك') || msg.includes('الرجاء') || msg.includes('يرجى') || msg.includes('عذراً')) {
+            return { iconClass: 'fa-solid fa-circle-exclamation', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.12)', title: 'تنبيه هام' };
+        }
+        return { iconClass: 'fa-solid fa-circle-info', color: '#c5a880', bg: 'rgba(197, 168, 128, 0.12)', title: 'تنبيه' };
+    }
+
+    window.alert = function(msg) {
+        text.textContent = msg;
+        const config = getIconAndColorForMessage(msg);
+        
+        icon.className = config.iconClass;
+        iconContainer.style.color = config.color;
+        iconContainer.style.backgroundColor = config.bg;
+        card.style.borderTopColor = config.color;
+        title.textContent = config.title;
+
+        backdrop.classList.add('active');
+        btn.focus();
+        
+        return new Promise((resolve) => {
+            currentCallback = resolve;
+        });
+    };
+
+    function closeAlert() {
+        backdrop.classList.remove('active');
+        if (currentCallback) {
+            currentCallback();
+            currentCallback = null;
+        }
+    }
+
+    btn.addEventListener('click', closeAlert);
+    
+    backdrop.addEventListener('click', function(e) {
+        if (e.target === backdrop) {
+            closeAlert();
+        }
+    });
+
+    window.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && backdrop.classList.contains('active')) {
+            closeAlert();
+        }
+    });
+})();
+
 // Initialize Supabase Client
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -66,10 +248,50 @@ const successCloseBtn = document.getElementById('successCloseBtn');
 
 // Initial Setup
 document.addEventListener('DOMContentLoaded', () => {
-    fetchProducts();
-    populateWilayas();
-    updateCartBadge();
-    setupEventListeners();
+    // SWR implementation: load cache instantly if it exists
+    let cacheLoaded = false;
+    try {
+        const prod = localStorage.getItem('asel_products_cache');
+        const st = localStorage.getItem('asel_stock_cache');
+        const sett = localStorage.getItem('asel_settings_cache');
+        
+        if (prod && st) {
+            productsList = JSON.parse(prod).filter(p => p.is_active !== false);
+            stockList = JSON.parse(st);
+            displayProducts();
+            
+            if (sett) {
+                applySettingsToUI(JSON.parse(sett));
+            }
+            
+            // Hide loader and show grid instantly
+            productsLoader.style.display = 'none';
+            productsGrid.style.display = 'grid';
+            cacheLoaded = true;
+            console.log('Storefront SWR: Rendered cached products and settings instantly.');
+        }
+    } catch (e) {
+        console.error('Failed to load initial storefront cache:', e);
+    }
+    
+    if (cacheLoaded) {
+        // Initialize interactive elements
+        populateWilayas();
+        updateCartBadge();
+        setupEventListeners();
+        setupRealtime();
+        
+        // Quietly fetch fresh data from Supabase in background
+        fetchStorefrontData(true);
+    } else {
+        // Standard blocking fetch from Supabase
+        fetchStorefrontData(false).then(() => {
+            populateWilayas();
+            updateCartBadge();
+            setupEventListeners();
+            setupRealtime();
+        });
+    }
 });
 
 // Setup Event Listeners
@@ -115,36 +337,196 @@ function toggleModal(modal, show) {
     }
 }
 
-// Fetch Products from Supabase
-async function fetchProducts() {
+// Fetch products, stock, and settings in parallel from Supabase
+async function fetchStorefrontData(isQuiet = false) {
     try {
-        productsLoader.style.display = 'flex';
-        productsGrid.style.display = 'none';
+        if (!isQuiet) {
+            productsLoader.style.display = 'grid';
+            productsGrid.style.display = 'none';
+        }
 
-        // Fetch products
-        const { data: products, error: pError } = await supabaseClient
-            .from('products')
-            .select('*')
-            .order('created_at', { ascending: false });
+        if (!navigator.onLine) {
+            throw new Error('OfflineModeActive');
+        }
 
-        if (pError) throw pError;
-        productsList = products;
+        // Fetch products, stock, and settings in parallel to dramatically improve performance
+        const [productsRes, stockRes, settingsRes] = await Promise.all([
+            supabaseClient.from('products').select('*').order('created_at', { ascending: false }),
+            supabaseClient.from('stock').select('*'),
+            supabaseClient.from('settings').select('*').eq('id', 1).single()
+        ]);
 
-        // Fetch stock
-        const { data: stock, error: sError } = await supabaseClient
-            .from('stock')
-            .select('*');
+        if (productsRes.error) throw productsRes.error;
+        if (stockRes.error) throw stockRes.error;
 
-        if (sError) throw sError;
-        stockList = stock;
+        productsList = productsRes.data.filter(p => p.is_active !== false);
+        stockList = stockRes.data;
+
+        // Cache state locally on success
+        try {
+            localStorage.setItem('asel_products_cache', JSON.stringify(productsRes.data));
+            localStorage.setItem('asel_stock_cache', JSON.stringify(stockRes.data));
+            if (!settingsRes.error && settingsRes.data) {
+                localStorage.setItem('asel_settings_cache', JSON.stringify(settingsRes.data));
+            }
+        } catch (e) {
+            console.error('Failed to cache storefront data locally:', e);
+        }
 
         displayProducts();
+
+        if (!settingsRes.error && settingsRes.data) {
+            applySettingsToUI(settingsRes.data);
+        }
+
+        if (activeProduct) {
+            const updatedProduct = productsList.find(p => p.id === activeProduct.id);
+            if (updatedProduct) {
+                openProductDetails(updatedProduct, activeColor, activeSize);
+            } else {
+                toggleModal(productModal, false);
+                activeProduct = null;
+            }
+        }
+
+        if (!isQuiet) {
+            productsLoader.style.display = 'none';
+            productsGrid.style.display = 'grid';
+        }
     } catch (error) {
-        console.error('Error fetching products:', error);
-        productsGrid.innerHTML = `<p class="error-msg">حدث خطأ أثناء تحميل المنتجات. يرجى إعادة المحاولة.</p>`;
-        productsGrid.style.display = 'grid';
-    } finally {
-        productsLoader.style.display = 'none';
+        console.warn('Network storefront fetch failed, falling back to local cache:', error);
+        try {
+            const prod = localStorage.getItem('asel_products_cache');
+            const st = localStorage.getItem('asel_stock_cache');
+            const sett = localStorage.getItem('asel_settings_cache');
+
+            if (prod && st) {
+                productsList = JSON.parse(prod).filter(p => p.is_active !== false);
+                stockList = JSON.parse(st);
+                displayProducts();
+
+                if (sett) {
+                    applySettingsToUI(JSON.parse(sett));
+                }
+                
+                console.log('Successfully loaded storefront data from offline cache.');
+                return;
+            }
+        } catch (cacheErr) {
+            console.error('Failed to load storefront cache:', cacheErr);
+        }
+
+        if (!isQuiet) {
+            productsGrid.innerHTML = `<p class="error-msg">حدث خطأ أثناء تحميل المنتجات. يرجى التحقق من اتصالك بالإنترنت.</p>`;
+            productsGrid.style.display = 'grid';
+            productsLoader.style.display = 'none';
+        }
+    }
+}
+
+// Fetch Products from Supabase
+async function fetchProducts() {
+    await fetchStorefrontData(false);
+}
+
+// Fetch Settings from Supabase
+async function fetchSettings() {
+    try {
+        if (!navigator.onLine) {
+            throw new Error('OfflineModeActive');
+        }
+
+        const { data: settings, error } = await supabaseClient
+            .from('settings')
+            .select('*')
+            .eq('id', 1)
+            .single();
+
+        if (error) throw error;
+
+        try {
+            localStorage.setItem('asel_settings_cache', JSON.stringify(settings));
+        } catch (e) {
+            console.error('Failed to cache settings locally:', e);
+        }
+        
+        applySettingsToUI(settings);
+    } catch (err) {
+        console.warn('Network settings fetch failed, attempting local cache fallback:', err);
+        try {
+            const cached = localStorage.getItem('asel_settings_cache');
+            if (cached) {
+                applySettingsToUI(JSON.parse(cached));
+            }
+        } catch (cacheErr) {
+            console.error('Failed to load settings from cache:', cacheErr);
+        }
+    }
+}
+
+// Helper to apply website settings to UI
+function applySettingsToUI(settings) {
+    if (!settings) return;
+
+    // 1. Hero Content
+    const heroTitle = document.getElementById('heroTitle');
+    const heroSubtitle = document.getElementById('heroSubtitle');
+    if (heroTitle) heroTitle.textContent = settings.hero_title;
+    if (heroSubtitle) heroSubtitle.textContent = settings.hero_subtitle;
+
+    // 2. Footer About Text
+    const footerAbout = document.getElementById('footerAboutText');
+    if (footerAbout) footerAbout.textContent = settings.about_text;
+
+    // 3. Contacts
+    const footerPhone = document.getElementById('footerPhone');
+    const footerPhoneLink = document.getElementById('footerPhoneLink');
+    if (footerPhone) footerPhone.textContent = settings.phone_number;
+    if (footerPhoneLink) {
+        const rawPhone = settings.phone_number.replace(/\s+/g, '');
+        footerPhoneLink.href = `tel:${rawPhone}`;
+    }
+
+    const footerEmail = document.getElementById('footerEmail');
+    const footerEmailLink = document.getElementById('footerEmailLink');
+    if (footerEmail) footerEmail.textContent = settings.email;
+    if (footerEmailLink) footerEmailLink.href = `mailto:${settings.email.trim()}`;
+
+    const footerLocationLink = document.getElementById('footerLocationLink');
+    if (footerLocationLink) {
+        footerLocationLink.href = settings.location_url;
+    }
+
+    // 4. Social Media Links
+    const fbLink = document.getElementById('footerFacebookLink');
+    const instLink = document.getElementById('footerInstagramLink');
+    const tiktokLink = document.getElementById('footerTiktokLink');
+
+    if (fbLink) {
+        if (settings.facebook_url && settings.facebook_url.trim() !== '') {
+            fbLink.href = settings.facebook_url.trim();
+            fbLink.style.display = 'inline-flex';
+        } else {
+            fbLink.style.display = 'none';
+        }
+    }
+
+    if (instLink) {
+        if (settings.instagram_url && settings.instagram_url.trim() !== '') {
+            instLink.href = settings.instagram_url.trim();
+            instLink.style.display = 'inline-flex';
+        } else {
+            instLink.style.display = 'none';
+        }
+    }
+
+    if (tiktokLink) {
+        if (settings.tiktok_url && settings.tiktok_url.trim() !== '') {
+            tiktokLink.href = settings.tiktok_url.trim();
+            tiktokLink.style.display = 'inline-flex';
+        } else {
+            tiktokLink.style.display = 'none';
+        }
     }
 }
 
@@ -160,16 +542,23 @@ function displayProducts() {
 
     productsList.forEach(product => {
         const card = document.createElement('div');
-        card.className = 'product-card';
+        
+        // Calculate total stock for this product
+        const pStock = stockList.filter(s => s.product_id === product.id);
+        const totalQty = pStock.reduce((acc, s) => acc + s.quantity, 0);
+        const isOutOfStock = totalQty <= 0;
+        
+        card.className = `product-card ${isOutOfStock ? 'out-of-stock-card' : ''}`;
         
         const mainImage = product.images[0] || './images/kaftan_gold_1.png';
         const formattedPrice = Number(product.price).toLocaleString('ar-DZ') + ' د.ج';
 
         card.innerHTML = `
             <div class="product-image-container">
+                ${isOutOfStock ? '<span class="out-of-stock-badge">نفذت الكمية</span>' : ''}
                 <img class="product-card-image" src="${mainImage}" alt="${product.name}">
                 <div class="product-card-actions">
-                    <button class="btn btn-gold btn-view" data-id="${product.id}">معاينة سريعة</button>
+                    <button class="btn btn-gold btn-view" data-id="${product.id}">${isOutOfStock ? 'تفاصيل المنتج' : 'معاينة سريعة'}</button>
                 </div>
             </div>
             <div class="product-info">
@@ -189,10 +578,11 @@ function displayProducts() {
     });
 
     productsGrid.style.display = 'grid';
+    setupScrollReveal();
 }
 
 // Open Product Details Modal
-function openProductDetails(product) {
+function openProductDetails(product, initialColor = null, initialSize = null) {
     activeProduct = product;
     activeSize = null;
     activeColor = null;
@@ -222,37 +612,66 @@ function openProductDetails(product) {
 
     // Get product colors and sizes available in stock
     const pStock = stockList.filter(s => s.product_id === product.id);
-    const colors = [...new Set(pStock.map(s => s.color))];
+    const colors = [...new Set(pStock.filter(s => s.quantity > 0).map(s => s.color))];
     const sizes = ['S', 'M', 'L', 'XL', 'XXL']; // standard size list
 
     // Populate colors
     modalColorOptions.innerHTML = '';
-    colors.forEach(color => {
-        const colorBtn = document.createElement('button');
-        colorBtn.className = 'color-btn';
-        colorBtn.textContent = color;
-        colorBtn.addEventListener('click', () => {
-            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
-            colorBtn.classList.add('active');
-            activeColor = color;
-            updateSizeOptions(sizes, pStock);
-            checkStockStatus(pStock);
+    
+    if (colors.length === 0) {
+        modalColorOptions.innerHTML = '<span style="color: #c0392b; font-weight: 600; font-size: 14px;">هذا المنتج غير متوفر حالياً (نفذت الكمية)</span>';
+        modalSizeOptions.innerHTML = '';
+        modalStockStatus.innerHTML = '<span class="stock-status out-of-stock"><i class="fa-solid fa-circle-xmark"></i> نفذت الكمية</span>';
+        addToCartBtn.disabled = true;
+        addToCartBtn.innerHTML = 'نفذت الكمية';
+        addToCartBtn.onclick = null;
+    } else {
+        addToCartBtn.innerHTML = '<i class="fa-solid fa-cart-plus"></i> إضافة إلى السلة';
+        colors.forEach(color => {
+            const colorBtn = document.createElement('button');
+            colorBtn.className = 'color-btn';
+            colorBtn.textContent = color;
+            if (color === initialColor) {
+                colorBtn.classList.add('active');
+                activeColor = color;
+            }
+            colorBtn.addEventListener('click', () => {
+                document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+                colorBtn.classList.add('active');
+                activeColor = color;
+                updateSizeOptions(sizes, pStock);
+                checkStockStatus(pStock);
+            });
+            modalColorOptions.appendChild(colorBtn);
         });
-        modalColorOptions.appendChild(colorBtn);
-    });
 
-    // Populate sizes (disabled initially until color is selected)
-    modalSizeOptions.innerHTML = '';
-    sizes.forEach(size => {
-        const sizeBtn = document.createElement('button');
-        sizeBtn.className = 'size-btn';
-        sizeBtn.textContent = size;
-        sizeBtn.disabled = true; // wait for color first
-        modalSizeOptions.appendChild(sizeBtn);
-    });
+        // Populate sizes (disabled initially until color is selected)
+        modalSizeOptions.innerHTML = '';
+        sizes.forEach(size => {
+            const sizeBtn = document.createElement('button');
+            sizeBtn.className = 'size-btn';
+            sizeBtn.textContent = size;
+            sizeBtn.disabled = true; // wait for color first
+            modalSizeOptions.appendChild(sizeBtn);
+        });
 
-    modalStockStatus.innerHTML = '<span style="color: var(--text-muted);">الرجاء اختيار اللون أولاً</span>';
-    addToCartBtn.disabled = true;
+        if (activeColor) {
+            updateSizeOptions(sizes, pStock);
+            if (initialSize) {
+                const sizeBtns = modalSizeOptions.querySelectorAll('.size-btn');
+                sizeBtns.forEach(btn => {
+                    if (btn.textContent === initialSize && !btn.disabled) {
+                        btn.classList.add('active');
+                        activeSize = initialSize;
+                    }
+                });
+            }
+            checkStockStatus(pStock);
+        } else {
+            modalStockStatus.innerHTML = '<span style="color: var(--text-muted);">الرجاء اختيار اللون أولاً</span>';
+            addToCartBtn.disabled = true;
+        }
+    }
 
     toggleModal(productModal, true);
 }
@@ -517,7 +936,7 @@ async function handleCheckoutSubmit(e) {
         toggleModal(successModal, true);
 
         // Refresh product list and stock in background
-        fetchProducts();
+        fetchProductsQuietly();
 
     } catch (error) {
         console.error('Error placing order:', error);
@@ -527,4 +946,44 @@ async function handleCheckoutSubmit(e) {
         btnNormalText.style.display = 'inline-block';
         btnLoadingText.style.display = 'none';
     }
+}
+
+// Fetch products in the background quietly without showing loader
+async function fetchProductsQuietly() {
+    await fetchStorefrontData(true);
+}
+
+// Subscribe to real-time updates on products and stock
+function setupRealtime() {
+    supabaseClient
+        .channel('public-db-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
+            fetchProductsQuietly();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'stock' }, () => {
+            fetchProductsQuietly();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, () => {
+            fetchSettings();
+        })
+        .subscribe();
+}
+
+// Setup Scroll Reveal Observer
+function setupScrollReveal() {
+    const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('reveal');
+                obs.unobserve(entry.target); // Animates only once
+            }
+        });
+    }, {
+        threshold: 0.05,
+        rootMargin: '0px 0px -50px 0px'
+    });
+
+    document.querySelectorAll('.product-card').forEach(card => {
+        observer.observe(card);
+    });
 }

@@ -844,10 +844,10 @@ async function confirmAndPrintOrder(order) {
 
         // 3. Setup HTML print container and call browser print
         const printContainer = document.getElementById('printInvoiceContainer');
-        if (order.client_name === 'زبون حضوري' || order.delivery_type === 'استلام من المحل') {
-            printContainer.classList.add('in-shop-invoice');
+        if (order.client_name === 'زبون حضوري' && (!order.phone || order.phone === '-' || order.phone === '')) {
+            printContainer.classList.add('hide-client-info');
         } else {
-            printContainer.classList.remove('in-shop-invoice');
+            printContainer.classList.remove('hide-client-info');
         }
 
         document.getElementById('printInvoiceNumber').textContent = newInvoice.invoice_number;
@@ -1085,11 +1085,11 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
                 
                 <div class="invoice-client-info" style="font-size: 12px; line-height: 1.6; text-align: right;">
                     <h3 style="font-size: 13px; font-weight: bold; margin-bottom: 5px;">معلومات الزبون</h3>
-                    <div><strong>الاسم واللقب:</strong> <span>${clientName}</span></div>
-                    <div><strong>رقم الهاتف:</strong> <span>${phone}</span></div>
-                    <div><strong>الولاية:</strong> <span>${wilaya}</span></div>
-                    <div><strong>البلدية:</strong> <span>${baladiya}</span></div>
-                    <div><strong>نوع التوصيل:</strong> <span>${deliveryType}</span></div>
+                    <div><strong>الاسم واللقب:</strong> <span>${clientName || '-'}</span></div>
+                    <div><strong>رقم الهاتف:</strong> <span>${phone || '-'}</span></div>
+                    ${(wilaya && wilaya !== 'المحل' && wilaya !== '-') ? `<div><strong>الولاية:</strong> <span>${wilaya}</span></div>` : ''}
+                    ${(baladiya && baladiya !== 'المحل' && baladiya !== '-') ? `<div><strong>البلدية:</strong> <span>${baladiya}</span></div>` : ''}
+                    ${(deliveryType && deliveryType !== 'استلام من المحل' && deliveryType !== '-') ? `<div><strong>نوع التوصيل:</strong> <span>${deliveryType}</span></div>` : ''}
                 </div>
 
                 <div class="invoice-divider" style="border-top: 1px solid #ddd; margin: 8px 0;"></div>
@@ -1126,6 +1126,7 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
         `;
     };
 
+    const hideInfo = (clientName === 'زبون حضوري' && (!phone || phone === '-' || phone === ''));
     if (paidAmount !== null && remainingAmount !== null) {
         const customerCopy = createInvoiceBoxHTML('نسخة الزبون (Customer Copy)');
         const shopCopy = createInvoiceBoxHTML('نسخة المحل (Shop Copy)');
@@ -1135,13 +1136,17 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
             </div>
         `;
         printContainer.innerHTML = customerCopy + divider + shopCopy;
-        printContainer.classList.add('in-shop-invoice');
+        if (hideInfo) {
+            printContainer.classList.add('hide-client-info');
+        } else {
+            printContainer.classList.remove('hide-client-info');
+        }
     } else {
         printContainer.innerHTML = createInvoiceBoxHTML('');
-        if (clientName === 'زبون حضوري' || deliveryType === 'استلام من المحل') {
-            printContainer.classList.add('in-shop-invoice');
+        if (hideInfo) {
+            printContainer.classList.add('hide-client-info');
         } else {
-            printContainer.classList.remove('in-shop-invoice');
+            printContainer.classList.remove('hide-client-info');
         }
     }
 }
