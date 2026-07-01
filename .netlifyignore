@@ -1,0 +1,8 @@
+dist/
+build/
+node_modules/
+.git/
+.system_generated/
+*.exe
+*.dmg
+*.zip

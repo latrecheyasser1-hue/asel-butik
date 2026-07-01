@@ -24,7 +24,10 @@ const filesToCopy = [
     'admin.js',
     'admin.css',
     'images',
-    'admin'
+    'admin',
+    'sw.js',
+    'manifest.json',
+    'register'
 ];
 
 function copyRecursiveSync(src, dest) {
@@ -53,10 +56,12 @@ console.log('Files copied to _site. Starting deployment...');
 
 try {
     const env = Object.assign({}, process.env, {
-        NETLIFY_AUTH_TOKEN: 'nfp_eYAMGPxFTnPsouToWhe13nEWDoLcAjy5b9d8',
-        NETLIFY_SITE_ID: '8c1dc26d-851e-4c44-95cc-71384d4dda58'
+        NETLIFY_AUTH_TOKEN: 'nfc_nqxYZAdSBGi4GXBpjLTQ8vT5CWTwdrsw7b34',
+        NETLIFY_SITE_ID: 'a36f181a-b826-4c70-873e-64a325dc38c6',
+        NETLIFY_CLI_DISABLE_TELEMETRY: '1'
     });
-    const output = execSync('npx netlify-cli deploy --prod --dir=_site --site=8c1dc26d-851e-4c44-95cc-71384d4dda58 --auth=nfp_eYAMGPxFTnPsouToWhe13nEWDoLcAjy5b9d8', { encoding: 'utf8', stdio: 'inherit', env });
+    const output = execSync('npx -y netlify-cli deploy --prod --dir=_site --site=a36f181a-b826-4c70-873e-64a325dc38c6 --auth=nfc_nqxYZAdSBGi4GXBpjLTQ8vT5CWTwdrsw7b34', { encoding: 'utf8', env });
+    console.log(output);
     console.log('Deployment successful!');
 } catch (e) {
     console.error('Deployment failed:', e.message);
@@ -65,3 +70,4 @@ try {
 // Cleanup
 fs.rmSync(targetDir, { recursive: true, force: true });
 console.log('Cleaned up _site directory.');
+

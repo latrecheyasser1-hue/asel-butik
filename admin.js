@@ -182,19 +182,38 @@
 
 // Desktop App (Electron) Print Helper
 async function triggerPrint(printerType = 'receipt') {
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    if (printerType === 'receipt') {
+        if (window.electronAPI && window.electronAPI.printSilent) {
+            const deviceName = localStorage.getItem('receiptPrinterName') || '';
+            try {
+                const result = await window.electronAPI.printSilent({ deviceName });
+                if (!result.success) {
+                    console.error("Silent receipt print failed:", result.error);
+                    window.print();
+                }
+            } catch (err) {
+                console.error("IPC Error:", err);
+                window.print();
+            }
+        } else {
+            window.print();
+        }
+        return;
+    }
+
     if (window.electronAPI && window.electronAPI.printSilent) {
         let deviceName = '';
-        if (printerType === 'receipt') {
-            deviceName = localStorage.getItem('receiptPrinterName') || '';
-        } else if (printerType === 'barcode') {
+        if (printerType === 'barcode') {
             deviceName = localStorage.getItem('barcodePrinterName') || '';
         }
         
         try {
-            const result = await window.electronAPI.printSilent({ deviceName: deviceName });
+            let options = { deviceName: deviceName };
+            const result = await window.electronAPI.printSilent(options);
             if (!result.success) {
                 console.error('Silent print failed:', result.error);
-                // Fallback if silent print fails completely for some reason
                 window.print();
             }
         } catch (e) {
@@ -207,12 +226,35 @@ async function triggerPrint(printerType = 'receipt') {
     }
 }
 
-// Initialize Supabase Client
 let supabaseClient;
-try {
-    supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-} catch (err) {
-    alert("Supabase Client Init Error: " + err.message + "\n" + err.stack);
+if (typeof supabase !== 'undefined') {
+    try {
+        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (err) {
+        console.warn("Supabase init error:", err);
+    }
+}
+if (!supabaseClient) {
+    console.warn("Offline mode: Supabase CDN not loaded, creating mock offline proxy.");
+    const createMockChain = () => {
+        const chain = {
+            select: () => chain,
+            order: () => chain,
+            eq: () => chain,
+            single: async () => ({ data: null, error: new Error('Offline CDN') }),
+            then: (resolve) => resolve({ data: null, error: new Error('Offline CDN') }),
+            update: () => chain,
+            insert: () => chain,
+            delete: () => chain,
+            upsert: () => chain
+        };
+        return chain;
+    };
+    supabaseClient = {
+        from: () => createMockChain(),
+        channel: () => ({ on: () => ({ subscribe: () => {} }) }),
+        removeChannel: () => {}
+    };
 }
 
 function formatImageUrl(url) {
@@ -409,9 +451,17 @@ function setupExpensesFeature() {
     const closeExpensesModalBtn = document.getElementById('closeExpensesModalBtn');
     const addExpenseForm = document.getElementById('addExpenseForm');
 
+    const expensesSearchInput = document.getElementById('expensesSearchInput');
+    if (expensesSearchInput) {
+        expensesSearchInput.addEventListener('input', () => {
+            renderExpensesModalContent();
+        });
+    }
+
     if (expensesStatCard && expensesModal) {
         expensesStatCard.addEventListener('click', () => {
             expensesModal.classList.add('active');
+            if (expensesSearchInput) expensesSearchInput.value = '';
             renderExpensesModalContent();
         });
     }
@@ -536,13 +586,36 @@ function renderExpensesModalContent() {
         startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 29);
     }
 
-    const filteredExpenses = expensesList.filter(exp => {
-        if (dateFilterVal === 'all') return true;
-        const expDate = new Date(exp.created_at);
-        if (startDate && expDate < startDate) return false;
-        if (endDate && expDate >= endDate) return false;
-        return true;
-    });
+    const searchQuery = (document.getElementById('expensesSearchInput')?.value || '').trim().toLowerCase().replace(/^#/, '');
+    let filteredExpenses = expensesList;
+
+    if (searchQuery) {
+        if (/^\d+$/.test(searchQuery)) {
+            const exactRegex = new RegExp('#' + searchQuery + '(?!\\d)', 'i');
+            const exactMatches = expensesList.filter(exp => exactRegex.test(exp.reason || ''));
+            if (exactMatches.length > 0) {
+                filteredExpenses = exactMatches;
+            } else {
+                filteredExpenses = expensesList.filter(exp => 
+                    (exp.reason || '').toLowerCase().includes(searchQuery) || 
+                    String(exp.amount || '').includes(searchQuery)
+                );
+            }
+        } else {
+            filteredExpenses = expensesList.filter(exp => 
+                (exp.reason || '').toLowerCase().includes(searchQuery) || 
+                String(exp.amount || '').includes(searchQuery)
+            );
+        }
+    } else {
+        filteredExpenses = expensesList.filter(exp => {
+            if (dateFilterVal === 'all') return true;
+            const expDate = new Date(exp.created_at);
+            if (startDate && expDate < startDate) return false;
+            if (endDate && expDate >= endDate) return false;
+            return true;
+        });
+    }
 
     if (filteredExpenses.length === 0) {
         if (emptyExpensesState) emptyExpensesState.style.display = 'flex';
@@ -626,6 +699,7 @@ function saveStateToLocalCache() {
         localStorage.setItem('asel_cashiers_cache', JSON.stringify(cashiersList));
         localStorage.setItem('asel_expenses_cache', JSON.stringify(expensesList));
         localStorage.setItem('asel_debts_cache', JSON.stringify(debtsList));
+        localStorage.setItem('asel_auth_codes_cache', JSON.stringify(authCodesList));
     } catch (e) {
         console.error('Failed to save state to localStorage cache:', e);
     }
@@ -653,6 +727,8 @@ function loadStateFromLocalCache() {
         if (cash) cashiersList = JSON.parse(cash);
         if (exp) expensesList = JSON.parse(exp);
         if (dbt) debtsList = JSON.parse(dbt);
+        const authC = localStorage.getItem('asel_auth_codes_cache');
+        if (authC) authCodesList = JSON.parse(authC);
         
         return !!prod; // Return true if we loaded at least products
     } catch (e) {
@@ -669,7 +745,7 @@ async function loadDashboardData(isQuiet = false) {
             tabPanelsContainer.style.display = 'none';
         } else {
             const syncBadge = document.getElementById('syncStatusBadge');
-            if (syncBadge) {
+            if (syncBadge && !window.isSilentPolling) {
                 const textSpan = syncBadge.querySelector('span');
                 if (textSpan) textSpan.textContent = 'جاري تحديث البيانات...';
                 syncBadge.style.display = 'flex';
@@ -702,6 +778,33 @@ async function loadDashboardData(isQuiet = false) {
         if (settingsRes.error) throw settingsRes.error;
         if (debtsRes.error) throw debtsRes.error;
 
+        if (isQuiet) {
+            const oldOrdersJson = JSON.stringify(ordersList || []);
+            const newOrdersJson = JSON.stringify(ordersRes.data || []);
+            const oldInvoicesJson = JSON.stringify(invoicesList || []);
+            const newInvoicesJson = JSON.stringify(invoicesRes.data || []);
+            const oldStockJson = JSON.stringify(stockList || []);
+            const newStockJson = JSON.stringify(stockRes.data || []);
+            const oldProductsJson = JSON.stringify(productsList || []);
+            const newProductsJson = JSON.stringify(productsRes.data || []);
+            const oldExpensesJson = JSON.stringify(expensesList || []);
+            const newExpensesJson = JSON.stringify(expensesRes.data || []);
+            const oldDebtsJson = JSON.stringify(debtsList || []);
+            const newDebtsJson = JSON.stringify(debtsRes.data || []);
+
+            // Check if there are any new pending orders specifically to play notification sound
+            const oldPendingCount = (ordersList || []).filter(o => o.status === 'جديد').length;
+            const newPendingCount = (ordersRes.data || []).filter(o => o.status === 'جديد').length;
+            if (newPendingCount > oldPendingCount && typeof playNewOrderNotificationSound === 'function') {
+                playNewOrderNotificationSound();
+            }
+
+            // If nothing changed at all, return early without re-rendering
+            if (oldOrdersJson === newOrdersJson && oldInvoicesJson === newInvoicesJson && oldStockJson === newStockJson && oldProductsJson === newProductsJson && oldExpensesJson === newExpensesJson && oldDebtsJson === newDebtsJson) {
+                return;
+            }
+        }
+
         productsList = productsRes.data;
         stockList = stockRes.data;
         ordersList = ordersRes.data;
@@ -722,12 +825,13 @@ async function loadDashboardData(isQuiet = false) {
         renderGeneralOrders();
         renderHistoryTable();
         
-        if (currentTab === 'stock') renderStockGrid();
-        if (currentTab === 'suppliers') renderSuppliersTab();
-        if (currentTab === 'analytics') renderAnalytics();
-        if (currentTab === 'cashiers') renderCashiersTab();
-        if (currentTab === 'settings') populateSettingsForm();
-        if (currentTab === 'debts') renderDebtsTab();
+        const isTyping = document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA');
+        if (currentTab === 'stock' && !isTyping) renderStockGrid();
+        if (currentTab === 'suppliers' && !isTyping) renderSuppliersTab();
+        if (currentTab === 'analytics' && !isTyping) renderAnalytics();
+        if (currentTab === 'cashiers' && !isTyping) renderCashiersTab();
+        if (currentTab === 'settings' && !isQuiet) populateSettingsForm();
+        if (currentTab === 'debts' && !isTyping) renderDebtsTab();
 
         tabPanelsContainer.style.display = 'block';
     } catch (err) {
@@ -842,33 +946,22 @@ async function confirmAndPrintOrder(order) {
 
         if (ordError) throw ordError;
 
-        // 3. Setup HTML print container and call browser print
-        const printContainer = document.getElementById('printInvoiceContainer');
-        if (order.client_name === 'زبون حضوري' && (!order.phone || order.phone === '-' || order.phone === '')) {
-            printContainer.classList.add('hide-client-info');
-        } else {
-            printContainer.classList.remove('hide-client-info');
-        }
-
-        document.getElementById('printInvoiceNumber').textContent = newInvoice.invoice_number;
-        document.getElementById('printInvoiceDate').textContent = new Date(newInvoice.printed_at).toLocaleDateString('ar-DZ', {
-            hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'numeric', year: 'numeric'
-        });
-        document.getElementById('printClientName').textContent = newInvoice.client_name;
-        document.getElementById('printClientPhone').textContent = newInvoice.phone;
-        document.getElementById('printClientWilaya').textContent = newInvoice.wilaya;
-        document.getElementById('printClientBaladiya').textContent = newInvoice.baladiya;
-        document.getElementById('printDeliveryType').textContent = newInvoice.delivery_type;
-        const tbody = document.getElementById('printInvoiceItems');
-        tbody.innerHTML = `
-            <tr>
-                <td>${newInvoice.product_name}</td>
-                <td>${newInvoice.color}</td>
-                <td>${newInvoice.size}</td>
-                <td>${Number(newInvoice.total_price).toLocaleString('ar-DZ')} د.ج</td>
-            </tr>
-        `;
-        document.getElementById('printTotalAmount').textContent = Number(newInvoice.total_price).toLocaleString('ar-DZ') + ' د.ج';
+        // 3. Setup HTML print container
+        setupInvoicePrintView(
+            newInvoice.invoice_number,
+            newInvoice.printed_at,
+            newInvoice.client_name,
+            newInvoice.phone,
+            newInvoice.wilaya,
+            newInvoice.baladiya,
+            newInvoice.delivery_type,
+            [{
+                product_name: newInvoice.product_name,
+                color: newInvoice.color,
+                size: newInvoice.size,
+                total_price: newInvoice.total_price
+            }]
+        );
 
         // Reload data from DB
         await loadDashboardData();
@@ -976,13 +1069,139 @@ function renderHistoryTable(filteredInvoices = null) {
             <td>${first.delivery_type}</td>
             <td style="font-family: var(--font-serif); font-weight: bold; color: var(--success-color);">${Number(totalInvoicePrice).toLocaleString('ar-DZ')} د.ج</td>
             <td>
-                <button class="btn btn-sm btn-print reprint-btn" data-id="${first.id}"><i class="fa-solid fa-print"></i> إعادة طبع</button>
+                <div style="display: flex; gap: 6px; justify-content: center; align-items: center;">
+                    <button class="btn btn-sm btn-print reprint-btn" data-id="${first.id}"><i class="fa-solid fa-print"></i> إعادة طبع</button>
+                    <button class="btn btn-sm btn-danger delete-invoice-btn" style="background: #dc3545; color: white;" title="حذف الوصل وإرجاع السلع للمخزن"><i class="fa-solid fa-trash"></i> حذف</button>
+                </div>
             </td>
         `;
 
         tr.querySelector('.reprint-btn').addEventListener('click', () => reprintInvoice(first));
+        tr.querySelector('.delete-invoice-btn').addEventListener('click', () => deleteInvoiceReceipt(num));
         historyTableBody.appendChild(tr);
     });
+}
+
+async function deleteInvoiceReceipt(invoiceNum) {
+    const confirmed = confirm(`هل أنت متأكد من حذف الوصل رقم #${invoiceNum} نهائياً وإرجاع المنتجات إلى المخزون؟`);
+    if (!confirmed) return;
+
+    try {
+        adminLoader.style.display = 'flex';
+
+        // 1. Find all invoice items with this invoice number
+        const invoiceItems = invoicesList.filter(inv => inv.invoice_number.toString() === invoiceNum.toString());
+        if (invoiceItems.length === 0) {
+            alert('لم يتم العثور على الوصل.');
+            return;
+        }
+
+        // 2. Restore stock for each item
+        for (const item of invoiceItems) {
+            let prodId = null;
+            let unitPrice = 0;
+
+            if (item.order_id) {
+                const ord = ordersList.find(o => o.id === item.order_id);
+                if (ord && ord.product_id) {
+                    prodId = ord.product_id;
+                }
+            }
+
+            const prodObj = productsList.find(p => (prodId && p.id === prodId) || p.name === item.product_name);
+            if (prodObj) {
+                prodId = prodObj.id;
+                unitPrice = Number(prodObj.price) || 0;
+            }
+
+            let qty = 1;
+            if (unitPrice > 0 && Number(item.total_price) > 0) {
+                qty = Math.round(Number(item.total_price) / unitPrice);
+                if (qty < 1) qty = 1;
+            }
+
+            let foundProdId = prodId;
+            if (!foundProdId) {
+                const p = productsList.find(x => x.name === item.product_name);
+                if (p) foundProdId = p.id;
+            }
+
+            const stockItem = stockList.find(s => 
+                (foundProdId ? s.product_id === foundProdId : true) && 
+                s.color === item.color && 
+                s.size === item.size
+            );
+
+            if (stockItem) {
+                stockItem.quantity += qty;
+                await supabaseClient
+                    .from('stock')
+                    .update({ quantity: stockItem.quantity })
+                    .eq('id', stockItem.id);
+            } else if (foundProdId) {
+                const { data: newStock } = await supabaseClient
+                    .from('stock')
+                    .insert({
+                        product_id: foundProdId,
+                        color: item.color,
+                        size: item.size,
+                        quantity: qty
+                    })
+                    .select()
+                    .single();
+                if (newStock) {
+                    stockList.push(newStock);
+                }
+            }
+        }
+
+        // 3. Delete from invoices table and invoicesList
+        await supabaseClient
+            .from('invoices')
+            .delete()
+            .eq('invoice_number', invoiceNum);
+
+        invoicesList = invoicesList.filter(inv => inv.invoice_number.toString() !== invoiceNum.toString());
+
+        // 4. Delete linked orders from orders table and ordersList
+        const orderIds = invoiceItems.map(inv => inv.order_id).filter(Boolean);
+        for (const oId of orderIds) {
+            await supabaseClient.from('orders').delete().eq('id', oId);
+        }
+        ordersList = ordersList.filter(o => !orderIds.includes(o.id));
+
+        // 5. Delete associated debt if exists
+        const associatedDebt = debtsList.find(d => d.invoice_number && d.invoice_number.toString() === invoiceNum.toString());
+        if (associatedDebt) {
+            await supabaseClient.from('debts').delete().eq('id', associatedDebt.id);
+            debtsList = debtsList.filter(d => d.id !== associatedDebt.id);
+        }
+
+        // 6. Delete remise expense if exists for this invoice number
+        const remiseExp = expensesList.find(exp => exp.reason && exp.reason.includes(`للطلب رقم #${invoiceNum}`));
+        if (remiseExp) {
+            await supabaseClient.from('expenses').delete().eq('id', remiseExp.id);
+            expensesList = expensesList.filter(exp => exp.id !== remiseExp.id);
+        }
+
+        if (typeof saveStateToLocalCache === 'function') saveStateToLocalCache();
+
+        alert(`تم حذف الوصل #${invoiceNum} بنجاح وإرجاع السلع للمخزون وتحديث الحسابات والإحصائيات.`);
+
+        renderHistoryTable();
+        if (typeof renderGeneralOrders === 'function') renderGeneralOrders();
+        if (typeof renderStockGrid === 'function') renderStockGrid();
+        if (typeof renderAnalytics === 'function') renderAnalytics();
+
+        if (typeof loadDashboardDataQuietly === 'function') {
+            loadDashboardDataQuietly(true);
+        }
+    } catch (err) {
+        console.error('Error deleting receipt:', err);
+        alert('حدث خطأ أثناء حذف الوصل.');
+    } finally {
+        adminLoader.style.display = 'none';
+    }
 }
 
 async function reprintInvoice(inv) {
@@ -1043,15 +1262,15 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
 
         if (paidAmount !== null && remainingAmount !== null) {
             totalHTML = `
-                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; margin-top: 8px;">
+                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; margin-top: 8px;">
                     <span>المجموع الإجمالي:</span>
                     <span>${Number(items.reduce((sum, item) => sum + Number(item.total_price), 0)).toLocaleString('ar-DZ')} د.ج</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; color: var(--success-color); margin-top: 4px;">
+                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; color: var(--success-color); margin-top: 4px;">
                     <span>المبلغ المدفوع (عربون):</span>
                     <span>${Number(paidAmount).toLocaleString('ar-DZ')} د.ج</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; color: var(--danger-color); margin-top: 4px; border-top: 1px solid #ddd; padding-top: 4px;">
+                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 15px; color: var(--danger-color); margin-top: 4px; border-top: 1px solid #ddd; padding-top: 4px;">
                     <span>الدين المتبقي:</span>
                     <span>${Number(remainingAmount).toLocaleString('ar-DZ')} د.ج</span>
                 </div>
@@ -1060,10 +1279,10 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
 
         const itemsRows = items.map(item => `
             <tr>
-                <td style="padding: 4px 0;">${item.product_name}</td>
-                <td style="padding: 4px 0;">${item.color}</td>
-                <td style="padding: 4px 0;">${item.size}</td>
-                <td style="padding: 4px 0;">${Number(item.total_price).toLocaleString('ar-DZ')} د.ج</td>
+                <td style="padding: 6px 0;">${item.product_name}</td>
+                <td style="padding: 6px 0;">${item.color}</td>
+                <td style="padding: 6px 0;">${item.size}</td>
+                <td style="padding: 6px 0;">${Number(item.total_price).toLocaleString('ar-DZ')} د.ج</td>
             </tr>
         `).join('');
 
@@ -1071,9 +1290,9 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
             <div class="invoice-box" style="margin-bottom: 20px; text-align: right; direction: rtl; font-family: 'Cairo', sans-serif;">
                 <div class="invoice-header" style="text-align: center;">
                     <h2 style="font-size: 18px; font-weight: bold; margin-bottom: 2px;">Asel Butik</h2>
-                    <p style="font-size: 11px; color: #666; margin-bottom: 5px;">للأزياء النسائية الفاخرة</p>
-                    ${copyTitle ? `<div style="text-align: center; margin-bottom: 8px; font-weight: bold; font-size: 11px; background: #f1f2f6; padding: 4px 10px; border-radius: 4px; display: inline-block;">${copyTitle}</div>` : ''}
-                    <div class="invoice-meta" style="font-size: 12px; margin-top: 5px; display: flex; flex-direction: column; gap: 3px;">
+                    <p style="font-size: 13px; color: #666; margin-bottom: 5px;">للأزياء النسائية الفاخرة</p>
+                    ${copyTitle ? `<div style="text-align: center; margin-bottom: 8px; font-weight: bold; font-size: 13px; background: #f1f2f6; padding: 4px 10px; border-radius: 4px; display: inline-block;">${copyTitle}</div>` : ''}
+                    <div class="invoice-meta" style="font-size: 13px; margin-top: 5px; display: flex; flex-direction: column; gap: 3px;">
                         <div><strong>رقم الوصل:</strong> <span>${invoiceNum}</span></div>
                         <div><strong>التاريخ:</strong> <span>${new Date(printedAt).toLocaleDateString('ar-DZ', {
                             hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'numeric', year: 'numeric'
@@ -1083,8 +1302,8 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
                 
                 <div class="invoice-divider" style="border-top: 1px solid #ddd; margin: 8px 0;"></div>
                 
-                <div class="invoice-client-info" style="font-size: 12px; line-height: 1.6; text-align: right;">
-                    <h3 style="font-size: 13px; font-weight: bold; margin-bottom: 5px;">معلومات الزبون</h3>
+                <div class="invoice-client-info" style="font-size: 13px; line-height: 1.6; text-align: right;">
+                    <h3 style="font-size: 14px; font-weight: bold; margin-bottom: 5px;">معلومات الزبون</h3>
                     <div><strong>الاسم واللقب:</strong> <span>${clientName || '-'}</span></div>
                     <div><strong>رقم الهاتف:</strong> <span>${phone || '-'}</span></div>
                     ${(wilaya && wilaya !== 'المحل' && wilaya !== '-') ? `<div><strong>الولاية:</strong> <span>${wilaya}</span></div>` : ''}
@@ -1094,13 +1313,13 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
 
                 <div class="invoice-divider" style="border-top: 1px solid #ddd; margin: 8px 0;"></div>
 
-                <table class="invoice-table" style="width: 100%; font-size: 11px; text-align: right; border-collapse: collapse;">
+                <table class="invoice-table" style="width: 100%; font-size: 13px; text-align: right; border-collapse: collapse;">
                     <thead>
                         <tr style="border-bottom: 1px solid #ddd; font-weight: bold;">
-                            <th style="padding: 4px 0; text-align: right;">المنتج</th>
-                            <th style="padding: 4px 0; text-align: right;">اللون</th>
-                            <th style="padding: 4px 0; text-align: right;">المقاس</th>
-                            <th style="padding: 4px 0; text-align: right;">المجموع</th>
+                            <th style="padding: 6px 0; text-align: right;">المنتج</th>
+                            <th style="padding: 6px 0; text-align: right;">اللون</th>
+                            <th style="padding: 6px 0; text-align: right;">المقاس</th>
+                            <th style="padding: 6px 0; text-align: right;">المجموع</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1114,8 +1333,8 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
 
                 <div class="invoice-divider" style="border-top: 1px solid #ddd; margin: 8px 0;"></div>
 
-                <div class="invoice-footer" style="text-align: center; font-size: 11px; line-height: 1.4; color: #555;">
-                    <div style="margin: 10px auto; padding: 6px 8px; border: 1px dashed #777; border-radius: 4px; background-color: #fcfcfc; color: #111; font-size: 10.5px; line-height: 1.5; text-align: center;">
+                <div class="invoice-footer" style="text-align: center; font-size: 12px; line-height: 1.4; color: #555;">
+                    <div style="margin: 10px auto; padding: 6px 8px; border: 1px dashed #777; border-radius: 4px; background-color: #fcfcfc; color: #111; font-size: 11px; line-height: 1.5; text-align: center;">
                         <div style="font-weight: bold; margin-bottom: 2px;">تنبيه:</div>
                         <div>السلع المباعة تُستبدل ولا تُرد خلال مدة أقصاها 48 ساعة من تاريخ الشراء، مع إحضار فاتورة الشراء.</div>
                     </div>
@@ -1127,23 +1346,22 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
     };
 
     const hideInfo = (clientName === 'زبون حضوري' && (!phone || phone === '-' || phone === ''));
-    const printPageStyle = `<style>@media print { body > * { display: none !important; } body { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: flex-start !important; width: 100% !important; margin: 0 !important; padding: 0 !important; background: white !important; } body > #printInvoiceContainer { display: block !important; visibility: visible !important; position: static !important; width: 72mm !important; margin: 0 !important; } @page { size: 80mm auto !important; margin: 0 !important; } }</style>`;
     if (paidAmount !== null && remainingAmount !== null) {
         const customerCopy = createInvoiceBoxHTML('نسخة الزبون (Customer Copy)');
         const shopCopy = createInvoiceBoxHTML('نسخة المحل (Shop Copy)');
         const divider = `
-            <div class="print-cut-line" style="border-top: 1px dashed #666; margin: 15px 0; text-align: center; font-size: 10px; color: #666; width: 100%;">
+            <div class="print-cut-line" style="border-top: 1px dashed #666; margin: 15px 0; text-align: center; font-size: 11px; color: #666; width: 100%;">
                 ✂------------------ نسخة المحل / نسخة الزبون ------------------✂
             </div>
         `;
-        printContainer.innerHTML = printPageStyle + customerCopy + divider + shopCopy;
+        printContainer.innerHTML = customerCopy + divider + shopCopy;
         if (hideInfo) {
             printContainer.classList.add('hide-client-info');
         } else {
             printContainer.classList.remove('hide-client-info');
         }
     } else {
-        printContainer.innerHTML = printPageStyle + createInvoiceBoxHTML('');
+        printContainer.innerHTML = createInvoiceBoxHTML('');
         if (hideInfo) {
             printContainer.classList.add('hide-client-info');
         } else {
@@ -1153,16 +1371,26 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
 }
 
 function filterHistory() {
-    const searchVal = historySearchInput.value.toLowerCase().trim();
+    let searchVal = historySearchInput.value.toLowerCase().trim();
     if (!searchVal) {
         renderHistoryTable();
         return;
     }
 
+    const cleanNum = searchVal.replace(/^#/, '');
+    if (/^\d+$/.test(cleanNum) && !cleanNum.startsWith('0')) {
+        const exactOrder = invoicesList.filter(inv => inv.invoice_number.toString() === cleanNum);
+        if (exactOrder.length > 0) {
+            renderHistoryTable(exactOrder);
+            return;
+        }
+    }
+
     const filtered = invoicesList.filter(inv => 
         inv.client_name.toLowerCase().includes(searchVal) ||
         inv.phone.includes(searchVal) ||
-        inv.invoice_number.toString().includes(searchVal)
+        inv.invoice_number.toString() === cleanNum ||
+        inv.invoice_number.toString().includes(cleanNum)
     );
 
     renderHistoryTable(filtered);
@@ -1384,57 +1612,88 @@ async function printProductBarcodeLabel(product) {
         <head>
             <meta charset="UTF-8">
             <title>ملصق الباركود - ${product.name}</title>
-            <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+            <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800&display=swap" rel="stylesheet">
             <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
             <style>
-                body {
+                * {
+                    box-sizing: border-box !important;
+                }
+                html, body {
                     margin: 0;
-                    padding: 10px;
+                    padding: 0;
+                    width: 100%;
+                    height: 100%;
+                    overflow: hidden;
                     font-family: 'Cairo', sans-serif;
-                    text-align: center;
-                    background: white;
-                    color: black;
+                    background: #fff;
+                    color: #000;
+                }
+                body {
+                    display: flex;
+                    align-items: flex-start;
+                    justify-content: center;
+                    padding: 10px 2px 2px 2px;
                 }
                 .label-container {
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    justify-content: center;
+                    justify-content: flex-start;
+                    padding-top: 6px;
                     width: 100%;
-                    max-width: 320px;
-                    margin: 0 auto;
+                    max-width: 100%;
+                    text-align: center;
+                    overflow: hidden;
+                    page-break-inside: avoid;
+                    break-inside: avoid;
                 }
                 .brand-title {
-                    font-size: 14px;
-                    font-weight: 700;
-                    color: #d4af37; /* gold */
-                    margin-bottom: 2px;
+                    font-size: 11px;
+                    font-weight: 800;
+                    line-height: 1.1;
+                    margin: 0 0 2px 0;
+                    color: #000;
                 }
                 .product-name {
-                    font-size: 13px;
-                    font-weight: 600;
-                    margin: 2px 0;
+                    font-size: 11px;
+                    font-weight: 700;
+                    line-height: 1.1;
+                    margin: 1px 0;
+                    max-width: 96%;
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
-                    max-width: 100%;
+                    color: #000;
                 }
                 .price {
-                    font-size: 14px;
-                    font-weight: 700;
-                    margin: 2px 0 6px 0;
+                    font-size: 11px;
+                    font-weight: 800;
+                    line-height: 1.1;
+                    margin: 0 0 2px 0;
+                    color: #000;
                 }
                 #barcode {
-                    width: 100%;
-                    max-height: 70px;
+                    max-width: 96%;
+                    max-height: 45px;
+                    width: auto;
+                    height: auto;
+                    display: block;
+                    margin: 0 auto;
+                    object-fit: contain;
                 }
                 @media print {
                     @page {
                         margin: 0;
-                        size: auto;
+                    }
+                    html, body {
+                        width: 100%;
+                        height: 100%;
+                        margin: 0;
+                        padding: 0;
+                        overflow: hidden;
                     }
                     body {
-                        padding: 5px;
+                        padding-top: 10px;
                     }
                 }
             </style>
@@ -1451,12 +1710,14 @@ async function printProductBarcodeLabel(product) {
                     JsBarcode("#barcode", "${product.barcode}", {
                         format: "CODE128",
                         lineColor: "#000",
-                        width: 2,
-                        height: 50,
+                        width: 1.3,
+                        height: 32,
                         displayValue: true,
                         font: "Cairo",
-                        fontSize: 14,
-                        textMargin: 4
+                        fontSize: 10,
+                        fontOptions: "bold",
+                        textMargin: 1,
+                        margin: 1
                     });
                 } catch(e) {
                     console.error("JsBarcode generation failed:", e);
@@ -1464,12 +1725,16 @@ async function printProductBarcodeLabel(product) {
                 
                 // If not in electron, trigger browser print
                 if (!window.electronAPI) {
-                    window.onload = function() {
-                        setTimeout(function() {
-                            window.print();
-                            window.close();
+                    const triggerBarcodePrint = () => {
+                        setTimeout(() => {
+                            try { window.print(); window.close(); } catch(e){}
                         }, 500);
                     };
+                    if (document.readyState === 'complete') {
+                        triggerBarcodePrint();
+                    } else {
+                        window.addEventListener('load', triggerBarcodePrint);
+                    }
                 }
             </script>
         </body>
@@ -2702,55 +2967,89 @@ function showConfirmModal(title, message, isDanger = true) {
 }
 
 // Quietly load dashboard data in the background (no loading spinner)
-async function loadDashboardDataQuietly() {
+async function loadDashboardDataQuietly(isSilent = false) {
+    if (isSilent) window.isSilentPolling = true;
     await loadDashboardData(true);
+    if (isSilent) window.isSilentPolling = false;
 }
 
-// Subscribe to realtime database changes for all public tables
+// Sound notification helper for new orders
+function playNewOrderNotificationSound() {
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // D5
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.15); // A5
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.5);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.5);
+    } catch (e) {
+        console.log('Audio notification error:', e);
+    }
+}
+
+// Subscribe to realtime database changes for all public tables & auto-poll
 function setupRealtime() {
-    supabaseClient
-        .channel('admin-db-changes')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
-            loadDashboardDataQuietly();
-        })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'stock' }, () => {
-            loadDashboardDataQuietly();
-        })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
-            loadDashboardDataQuietly();
-        })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'invoices' }, () => {
-            loadDashboardDataQuietly();
-        })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'suppliers' }, () => {
-            loadDashboardDataQuietly();
-        })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, () => {
-            loadDashboardDataQuietly();
-        })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'cashiers' }, () => {
-            loadDashboardDataQuietly().then(() => {
-                if (currentTab === 'cashiers') renderCashiersTab();
-            });
-        })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' }, () => {
-            loadDashboardDataQuietly().then(() => {
-                if (document.getElementById('expensesModal')?.classList.contains('active')) {
-                    renderExpensesModalContent();
-                }
-            });
-        })
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'debts' }, () => {
-            loadDashboardDataQuietly().then(() => {
-                if (currentTab === 'debts') renderDebtsTab();
-                if (document.getElementById('debtDetailsModal')?.classList.contains('active')) {
-                    const activeDebtId = document.getElementById('recordPaymentDebtId').value;
-                    const updatedDebt = debtsList.find(d => d.id === activeDebtId);
-                    if (updatedDebt) renderDebtDetailsModalContent(updatedDebt);
-                }
-            });
-        })
-        .subscribe();
+    try {
+        supabaseClient
+            .channel('admin-db-changes')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
+                loadDashboardDataQuietly();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'stock' }, () => {
+                loadDashboardDataQuietly();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+                loadDashboardDataQuietly();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'invoices' }, () => {
+                loadDashboardDataQuietly();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'suppliers' }, () => {
+                loadDashboardDataQuietly();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, () => {
+                loadDashboardDataQuietly();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'cashiers' }, () => {
+                loadDashboardDataQuietly().then(() => {
+                    if (currentTab === 'cashiers') renderCashiersTab();
+                });
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' }, () => {
+                loadDashboardDataQuietly().then(() => {
+                    if (document.getElementById('expensesModal')?.classList.contains('active')) {
+                        renderExpensesModalContent();
+                    }
+                });
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'debts' }, () => {
+                loadDashboardDataQuietly().then(() => {
+                    if (currentTab === 'debts') renderDebtsTab();
+                    if (document.getElementById('debtDetailsModal')?.classList.contains('active')) {
+                        const activeDebtId = document.getElementById('recordPaymentDebtId').value;
+                        const updatedDebt = debtsList.find(d => d.id === activeDebtId);
+                        if (updatedDebt) renderDebtDetailsModalContent(updatedDebt);
+                    }
+                });
+            })
+            .subscribe();
+    } catch (err) {
+        console.warn('Realtime subscription error:', err);
+    }
+
+    // Auto-polling fallback every 15 seconds when online (completely silent)
+    if (window.aselRealtimeInterval) clearInterval(window.aselRealtimeInterval);
+    window.aselRealtimeInterval = setInterval(() => {
+        if (navigator.onLine) {
+            loadDashboardDataQuietly(true);
+        }
+    }, 15000);
 }
 
 // ==========================================
@@ -3243,7 +3542,7 @@ function setupDebtsFeature() {
                 debt.paid_amount,
                 Number(debt.total_amount) - Number(debt.paid_amount)
             );
-            window.print();
+            triggerPrint('receipt');
         });
     }
     if (deleteDebtBtn) {
@@ -3272,6 +3571,12 @@ function setupInShopOrderModal() {
     const addedItemsList = document.getElementById('inShopAddedItemsList');
     const orderTotalSpan = document.getElementById('inShopOrderTotal');
 
+    // POS Grid and Sections
+    const productsGrid = document.getElementById('inShopProductsGrid');
+    const colorSection = document.getElementById('inShopColorSection');
+    const sizeSection = document.getElementById('inShopSizeSection');
+    const searchInput = document.getElementById('inShopSearchInput');
+
     // Pill containers
     const colorOptionsContainer = document.getElementById('inShopColorOptions');
     const sizeOptionsContainer = document.getElementById('inShopSizeOptions');
@@ -3297,6 +3602,20 @@ function setupInShopOrderModal() {
         qtyInput.value = 1;
         priceInput.value = '';
         warning.style.display = 'none';
+        
+        if (colorSection) colorSection.style.display = 'none';
+        if (sizeSection) sizeSection.style.display = 'none';
+
+        if (searchInput) {
+            searchInput.value = '';
+        }
+
+        if (productsGrid) {
+            productsGrid.querySelectorAll('.in-shop-grid-item').forEach(item => {
+                item.classList.remove('active');
+                item.style.display = 'flex';
+            });
+        }
         
         if (colorOptionsContainer) {
             colorOptionsContainer.innerHTML = '<span style="font-size: 13px; color: var(--text-muted); font-style: italic;">يرجى اختيار المنتج أولاً...</span>';
@@ -3353,24 +3672,55 @@ function setupInShopOrderModal() {
         if (amountPaidInput) amountPaidInput.value = '0';
         if (amountRemainingSpan) amountRemainingSpan.textContent = 'المتبقي: 0 د.ج';
 
-        // Populate products dropdown
+        // Populate products dropdown & grid
         productSelect.innerHTML = '<option value="">-- اختر المنتج --</option>';
+        if (productsGrid) productsGrid.innerHTML = '';
+
         productsList.forEach(prod => {
             // Calculate total stock for this product
             const totalStock = stockList
                 .filter(s => s.product_id === prod.id)
                 .reduce((sum, s) => sum + (Number(s.quantity) || 0), 0);
 
-            // Show product if totalStock > 0 (even if is_active is false)
+            const isOutOfStock = totalStock <= 0;
+
+            // Populate hidden select for compatibility
             if (totalStock > 0) {
                 const opt = document.createElement('option');
                 opt.value = prod.id;
-                if (prod.is_active === false) {
-                    opt.textContent = `${prod.name} (معطل على الموقع)`;
-                } else {
-                    opt.textContent = prod.name;
-                }
+                opt.textContent = prod.name;
                 productSelect.appendChild(opt);
+            }
+
+            // Populate Grid item
+            if (productsGrid) {
+                const card = document.createElement('div');
+                card.className = `in-shop-grid-item ${isOutOfStock ? 'out-of-stock' : ''}`;
+                card.setAttribute('data-id', prod.id);
+
+                const imageSrc = formatImageUrl(prod.images && prod.images[0]);
+                
+                card.innerHTML = `
+                    <img src="${imageSrc}" alt="${prod.name}">
+                    <span class="product-name">${prod.name}</span>
+                    ${isOutOfStock ? '<span class="stock-badge">غير متوفر</span>' : ''}
+                `;
+
+                if (!isOutOfStock) {
+                    card.addEventListener('click', () => {
+                        // Remove active class from all other grid items
+                        productsGrid.querySelectorAll('.in-shop-grid-item').forEach(item => {
+                            item.classList.remove('active');
+                        });
+                        // Add active class to clicked card
+                        card.classList.add('active');
+
+                        // Set value and trigger change event
+                        productSelect.value = prod.id;
+                        productSelect.dispatchEvent(new Event('change'));
+                    });
+                }
+                productsGrid.appendChild(card);
             }
         });
 
@@ -3384,6 +3734,27 @@ function setupInShopOrderModal() {
     closeBtn.addEventListener('click', closeModal);
     backdrop.addEventListener('click', closeModal);
 
+    // Live prefix search filtering for POS products grid
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.trim().toLowerCase();
+            if (productsGrid) {
+                productsGrid.querySelectorAll('.in-shop-grid-item').forEach(item => {
+                    const prodId = item.getAttribute('data-id');
+                    const product = productsList.find(p => p.id === prodId);
+                    if (product) {
+                        const name = product.name.toLowerCase();
+                        if (name.startsWith(query)) {
+                            item.style.display = 'flex';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    }
+                });
+            }
+        });
+    }
+
     // Load available colors for selected product (only colors with stock quantity > 0)
     productSelect.addEventListener('change', () => {
         const prodId = productSelect.value;
@@ -3391,17 +3762,23 @@ function setupInShopOrderModal() {
         sizeSelect.value = '';
         warning.style.display = 'none';
 
+        if (sizeSection) sizeSection.style.display = 'none';
+
         if (sizeOptionsContainer) {
             sizeOptionsContainer.innerHTML = '<span style="font-size: 13px; color: var(--text-muted); font-style: italic;">يرجى اختيار اللون أولاً...</span>';
         }
 
         if (!prodId) {
             priceInput.value = '';
+            if (colorSection) colorSection.style.display = 'none';
             if (colorOptionsContainer) {
                 colorOptionsContainer.innerHTML = '<span style="font-size: 13px; color: var(--text-muted); font-style: italic;">يرجى اختيار المنتج أولاً...</span>';
             }
             return;
         }
+
+        // Show color section
+        if (colorSection) colorSection.style.display = 'block';
 
         const product = productsList.find(p => p.id === prodId);
         if (product) {
@@ -3449,11 +3826,15 @@ function setupInShopOrderModal() {
         warning.style.display = 'none';
 
         if (!prodId || !selectedColor) {
+            if (sizeSection) sizeSection.style.display = 'none';
             if (sizeOptionsContainer) {
                 sizeOptionsContainer.innerHTML = '<span style="font-size: 13px; color: var(--text-muted); font-style: italic;">يرجى اختيار اللون أولاً...</span>';
             }
             return;
         }
+
+        // Show size section
+        if (sizeSection) sizeSection.style.display = 'block';
 
         // Filter stock items for this product and selected color with quantity > 0
         const matchingStock = stockList.filter(s => s.product_id === prodId && s.color === selectedColor && s.quantity > 0);
@@ -3488,6 +3869,11 @@ function setupInShopOrderModal() {
                         // Update hidden input and dispatch change
                         sizeSelect.value = stockItem.size;
                         sizeSelect.dispatchEvent(new Event('change'));
+
+                        // Automatically trigger adding to receipt for ultra-fast POS checkout flow
+                        setTimeout(() => {
+                            addBtn.click();
+                        }, 100);
                     });
                     sizeOptionsContainer.appendChild(btn);
                 }
@@ -3854,7 +4240,7 @@ function setupInShopOrderModal() {
                 alert('تم تسجيل المبيعات وطباعة الوصل محلياً (دون اتصال). سيتم إرسالها للإنترنت تلقائياً عند عودة الشبكة.');
                 
                 // Open print dialog
-                window.print();
+                triggerPrint('receipt');
             } catch (err) {
                 console.error('Offline save error:', err);
                 alert(err.message || 'حدث خطأ أثناء حفظ الطلب محلياً.');
@@ -4016,7 +4402,7 @@ function setupInShopOrderModal() {
             await loadDashboardData();
 
             // Open print dialog
-            window.print();
+            triggerPrint('receipt');
 
         } catch (err) {
             console.error('Error creating in-shop order:', err);
@@ -4505,17 +4891,40 @@ function setupAuth() {
                 if (loginBtnLoading) loginBtnLoading.style.display = 'inline-block';
                 if (loginError) loginError.style.display = 'none';
 
-                if (!navigator.onLine) {
-                    throw new Error('OfflineLoginNotSupported');
+                let role = null;
+                if (navigator.onLine) {
+                    try {
+                        const { data, error } = await supabaseClient.from('auth_codes').select('role').eq('pin', pin).single();
+                        if (!error && data) {
+                            role = data.role;
+                        }
+                    } catch (netErr) {
+                        console.warn('Network login error, falling back to offline cache:', netErr);
+                    }
                 }
 
-                const { data, error } = await supabaseClient.from('auth_codes').select('role').eq('pin', pin).single();
+                if (!role) {
+                    let cachedCodes = authCodesList;
+                    if (!cachedCodes || cachedCodes.length === 0) {
+                        try {
+                            const cachedStr = localStorage.getItem('asel_auth_codes_cache');
+                            if (cachedStr) cachedCodes = JSON.parse(cachedStr);
+                        } catch(e) {}
+                    }
+                    if (cachedCodes && cachedCodes.length > 0) {
+                        const match = cachedCodes.find(c => c.pin === pin);
+                        if (match) {
+                            role = match.role;
+                        }
+                    }
+                }
 
-                if (error || !data) {
+                if (!role) {
+                    if (!navigator.onLine) {
+                        throw new Error('OfflineLoginNotSupported');
+                    }
                     throw new Error('Invalid code');
                 }
-
-                const role = data.role;
                 sessionStorage.setItem('asel_session_role', role);
                 isCashierUser = (role === 'cashier');
                 
@@ -4642,6 +5051,7 @@ function renderCashiersTab() {
                     // Update local list
                     const cData = authCodesList.find(c => c.role === 'cashier');
                     if (cData) cData.pin = newCode;
+                    saveStateToLocalCache();
 
                     alert('تم تغيير كود الكاشير بنجاح.');
                 } catch (err) {
@@ -4680,6 +5090,7 @@ function renderCashiersTab() {
 
                 // Update local list
                 if (adminData) adminData.pin = newCodeInput;
+                saveStateToLocalCache();
 
                 alert('تم تغيير كود المدير بنجاح! احتفظ به جيداً.');
                 changeAdminCodeForm.reset();

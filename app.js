@@ -297,7 +297,11 @@ document.addEventListener('DOMContentLoaded', () => {
 // Setup Event Listeners
 function setupEventListeners() {
     // Cart open/close
-    cartTrigger.addEventListener('click', () => toggleModal(cartModal, true));
+    cartTrigger.addEventListener('click', () => openCartModal());
+    const floatingCartBtn = document.getElementById('floatingCartBtn');
+    if (floatingCartBtn) {
+        floatingCartBtn.addEventListener('click', () => openCartModal());
+    }
     cartClose.addEventListener('click', () => toggleModal(cartModal, false));
     startShopping.addEventListener('click', () => toggleModal(cartModal, false));
     
@@ -333,7 +337,8 @@ function toggleModal(modal, show) {
         document.body.style.overflow = 'hidden';
     } else {
         modal.classList.remove('active');
-        document.body.style.overflow = 'auto';
+        const anyActive = document.querySelector('.modal.active');
+        document.body.style.overflow = anyActive ? 'hidden' : 'auto';
     }
 }
 
@@ -549,6 +554,7 @@ function displayProducts() {
         const isOutOfStock = totalQty <= 0;
         
         card.className = `product-card ${isOutOfStock ? 'out-of-stock-card' : ''}`;
+        card.style.cursor = 'pointer';
         
         const mainImage = product.images[0] || './images/kaftan_gold_1.png';
         const formattedPrice = Number(product.price).toLocaleString('ar-DZ') + ' د.ج';
@@ -557,9 +563,6 @@ function displayProducts() {
             <div class="product-image-container">
                 ${isOutOfStock ? '<span class="out-of-stock-badge">نفذت الكمية</span>' : ''}
                 <img class="product-card-image" src="${mainImage}" alt="${product.name}">
-                <div class="product-card-actions">
-                    <button class="btn btn-gold btn-view" data-id="${product.id}">${isOutOfStock ? 'تفاصيل المنتج' : 'معاينة سريعة'}</button>
-                </div>
             </div>
             <div class="product-info">
                 <h3 class="product-name">${product.name}</h3>
@@ -569,8 +572,8 @@ function displayProducts() {
             </div>
         `;
 
-        // Add event listener to view details
-        card.querySelector('.btn-view').addEventListener('click', () => {
+        // Add event listener to view details on entire card
+        card.addEventListener('click', () => {
             openProductDetails(product);
         });
 
@@ -767,7 +770,13 @@ function addToCart(product, size, color, maxQty) {
     localStorage.setItem('asel_cart', JSON.stringify(shoppingCart));
     updateCartBadge();
     toggleModal(productModal, false);
-    openCartModal();
+    
+    // Animate floating badge to indicate item added
+    const floatingBtn = document.getElementById('floatingCartBtn');
+    if (floatingBtn) {
+        floatingBtn.classList.add('bounce');
+        setTimeout(() => floatingBtn.classList.remove('bounce'), 600);
+    }
 }
 
 // Open/refresh Cart Modal
@@ -824,7 +833,14 @@ function removeFromCart(idx) {
 // Update Cart Badge count
 function updateCartBadge() {
     const totalCount = shoppingCart.reduce((sum, item) => sum + item.quantity, 0);
-    cartCount.textContent = totalCount;
+    if (cartCount) cartCount.textContent = totalCount;
+    
+    const floatingBtn = document.getElementById('floatingCartBtn');
+    const floatingCount = document.getElementById('floatingCartCount');
+    if (floatingCount) floatingCount.textContent = totalCount;
+    if (floatingBtn) {
+        floatingBtn.style.display = totalCount > 0 ? 'flex' : 'none';
+    }
 }
 
 // Populate Wilayas dropdown

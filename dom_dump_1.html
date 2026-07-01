@@ -1,31 +1,6 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head><script>
-window.addEventListener('error', function(e) { require('fs').appendFileSync('C:/Users/Computs/Desktop/errors.log', e.message + ' ' + e.filename + ':' + e.lineno + '\n'); });
-window.addEventListener('unhandledrejection', function(e) { require('fs').appendFileSync('C:/Users/Computs/Desktop/errors.log', 'Promise rejection: ' + e.reason + '\n'); });
-</script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم | أسيل بوتيك</title>
-    <!-- Cairo Font for Arabic, Playfair Display for numbers and elegance -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
-    <!-- FontAwesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Admin Specific Stylesheet -->
-    <link rel="stylesheet" href="../admin.css?v=1.4.3">
-    
-    <!-- PWA Manifest & App Icons -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="../images/logo-192.png">
-    <link rel="icon" type="image/png" href="../images/logo-192.png">
-</head>
-<body>
+
     <!-- Initial Loader -->
-    <div id="adminLoader" class="admin-loader-container" style="display: flex; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-color); z-index: 99999;">
+    <div id="adminLoader" class="admin-loader-container" style="display: none; position: fixed; top: 0px; left: 0px; width: 100vw; height: 100vh; background: var(--bg-color); z-index: 99999;">
         <div class="admin-spinner"></div>
         <p style="margin-top: 15px; font-weight: bold;">جاري تحميل البيانات...</p>
     </div>
@@ -58,7 +33,7 @@ window.addEventListener('unhandledrejection', function(e) { require('fs').append
                     <i class="fa-solid fa-chart-pie"></i> الإحصائيات والتقارير
                 </button>
                 <button class="menu-item" data-tab="cashiers">
-                    <i class="fa-solid fa-key"></i> أكواد الدخول
+                    <i class="fa-solid fa-users-gear"></i> إدارة الكاشير (الموظفين)
                 </button>
                 <button class="menu-item" data-tab="settings">
                     <i class="fa-solid fa-gear"></i> الإعدادات العامّة
@@ -287,7 +262,7 @@ window.addEventListener('unhandledrejection', function(e) { require('fs').append
                         <select id="analyticsDateFilter" style="padding: 10px 20px; border-radius: 8px; border: 1.5px solid var(--border-color); background-color: #fff; color: var(--text-main); font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; outline: none; transition: all 0.3s ease; box-shadow: var(--shadow-sm); width: auto; min-width: 160px;">
                             <option value="today">اليوم (24 ساعة)</option>
                             <option value="yesterday">أمس</option>
-                            <option value="week" selected>آخر 7 أيام</option>
+                            <option value="week" selected="">آخر 7 أيام</option>
                             <option value="month">آخر 30 يوم</option>
                             <option value="all">كل الأوقات</option>
                         </select>
@@ -372,17 +347,17 @@ window.addEventListener('unhandledrejection', function(e) { require('fs').append
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="setHeroTitle">عنوان الواجهة (Hero Title) <span class="required">*</span></label>
-                                    <input type="text" id="setHeroTitle" placeholder="مثال: مرحباً بكم في Asel Butik" required>
+                                    <input type="text" id="setHeroTitle" placeholder="مثال: مرحباً بكم في أسيل بوتيك" required="">
                                 </div>
                                 <div class="form-group">
                                     <label for="setHeroSubtitle">العنوان الفرعي (Hero Subtitle) <span class="required">*</span></label>
-                                    <input type="text" id="setHeroSubtitle" placeholder="مثال: للأزياء النسائية الفاخرة" required>
+                                    <input type="text" id="setHeroSubtitle" placeholder="مثال: للأزياء النسائية الفاخرة" required="">
                                 </div>
                             </div>
 
                             <div class="form-group">
                                 <label for="setAboutText">وصف المتجر في الأسفل (About Description) <span class="required">*</span></label>
-                                <textarea id="setAboutText" rows="3" required placeholder="نبذة عن المتجر تظهر في أسفل الصفحة..."></textarea>
+                                <textarea id="setAboutText" rows="3" required="" placeholder="نبذة عن المتجر تظهر في أسفل الصفحة..."></textarea>
                             </div>
 
                             <div class="gold-divider" style="margin: 25px 0;"></div>
@@ -393,17 +368,17 @@ window.addEventListener('unhandledrejection', function(e) { require('fs').append
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="setPhoneNumber">رقم الهاتف <span class="required">*</span></label>
-                                    <input type="text" id="setPhoneNumber" placeholder="مثال: 0555123456" required>
+                                    <input type="text" id="setPhoneNumber" placeholder="مثال: 0555123456" required="">
                                 </div>
                                 <div class="form-group">
                                     <label for="setEmail">البريد الإلكتروني <span class="required">*</span></label>
-                                    <input type="email" id="setEmail" placeholder="مثال: contact@aselbutik.com" required>
+                                    <input type="email" id="setEmail" placeholder="مثال: contact@aselbutik.com" required="">
                                 </div>
                             </div>
 
                             <div class="form-group">
                                 <label for="setLocationUrl">رابط موقع المحل (Google Maps URL) <span class="required">*</span></label>
-                                <input type="url" id="setLocationUrl" placeholder="رابط خرائط جوجل للمحل..." required>
+                                <input type="url" id="setLocationUrl" placeholder="رابط خرائط جوجل للمحل..." required="">
                             </div>
 
                             <div class="gold-divider" style="margin: 25px 0;"></div>
@@ -426,7 +401,7 @@ window.addEventListener('unhandledrejection', function(e) { require('fs').append
                                 <label for="setTiktokUrl"><i class="fa-brands fa-tiktok" style="color: #000000; margin-left: 5px;"></i>رابط حساب التيك توك</label>
                                 <input type="url" id="setTiktokUrl" placeholder="https://tiktok.com/@yourusername">
                             </div>
-                            <div class="gold-divider" style="margin: 25px 0;" id="printerSettingsDivider" style="display: none;"></div>
+                            <div class="gold-divider" style="margin: 25px 0;" id="printerSettingsDivider"></div>
 
                             <!-- Section 4: Desktop Printers (Only shown in Electron) -->
                             <h3 id="printerSettingsTitle" style="font-size: 16px; font-weight: 600; margin-bottom: 15px; color: var(--accent-gold); display: none;">إعدادات الطباعة المباشرة</h3>
@@ -452,40 +427,41 @@ window.addEventListener('unhandledrejection', function(e) { require('fs').append
                     </div>
                 </section>
 
-                <!-- TAB 5: ACCESS CODES (أكواد الدخول) -->
+                <!-- TAB 5: CASHIERS (إدارة الكاشير) -->
                 <section class="tab-panel" id="tab-cashiers">
-                    <div class="stock-actions">
-                        <h2>إدارة أكواد الدخول</h2>
-                    </div>
-
-                    <!-- Cashier Code Section -->
+                    <!-- Invitation Link Section -->
                     <div style="background-color: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); margin-bottom: 25px;">
-                        <h2 style="font-size: 18px; font-weight: 700; color: var(--primary-blue); margin-bottom: 10px;"><i class="fa-solid fa-user-tag" style="color: var(--accent-gold); margin-left: 8px;"></i>كود الكاشير (الموظف)</h2>
-                        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 15px;">هذا هو الكود المخصص للموظفين للوصول إلى واجهة البيع فقط.</p>
+                        <h2 style="font-size: 18px; font-weight: 700; color: var(--primary-blue); margin-bottom: 10px;"><i class="fa-solid fa-link" style="color: var(--accent-gold); margin-left: 8px;"></i>رابط دعوة الموظفين (الكاشير)</h2>
+                        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 15px;">انسخ هذا الرابط وأرسله للموظفين الجدد ليتمكنوا من تسجيل حساباتهم الشخصية.</p>
                         <div style="display: flex; gap: 10px; align-items: center;">
-                            <input type="text" id="cashierCodeDisplay" readonly style="flex: 1; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); font-family: var(--font-serif); font-size: 20px; font-weight: bold; background-color: #f1f2f6; cursor: text; text-align: center; letter-spacing: 5px;" value="------">
-                            <button class="btn btn-primary" id="regenerateCashierCodeBtn" style="padding: 12px 20px;"><i class="fa-solid fa-arrows-rotate" style="margin-left: 5px;"></i>توليد كود جديد</button>
+                            <input type="text" id="caisseInviteLink" readonly="" style="flex: 1; padding: 12px; border-radius: 6px; border: 1px solid var(--border-color); font-family: inherit; font-size: 14px; background-color: #f1f2f6; cursor: text;" value="">
+                            <button class="btn btn-primary" id="copyCaisseInviteLinkBtn" style="padding: 12px 20px;"><i class="fa-solid fa-copy" style="margin-left: 5px;"></i>نسخ الرابط</button>
                         </div>
                     </div>
 
-                    <!-- Admin Code Section -->
-                    <div style="background-color: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color);">
-                        <h2 style="font-size: 18px; font-weight: 700; color: var(--primary-blue); margin-bottom: 10px;"><i class="fa-solid fa-user-shield" style="color: var(--danger-color); margin-left: 8px;"></i>كود المدير (Admin)</h2>
-                        <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 15px;">تغيير كود الإدارة يمنح صلاحيات كاملة على النظام. يرجى الحذر وتذكر الكود الجديد.</p>
-                        
-                        <form id="changeAdminCodeForm" onsubmit="event.preventDefault();" style="display: flex; flex-direction: column; gap: 15px; max-width: 400px;">
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label for="currentAdminCode">الكود الحالي <span class="required">*</span></label>
-                                <input type="password" id="currentAdminCode" required maxlength="6" pattern="\\d{6}" placeholder="أدخل كود المدير الحالي (6 أرقام)" style="letter-spacing: 2px;">
-                            </div>
-                            <div class="form-group" style="margin-bottom: 0;">
-                                <label for="newAdminCode">الكود الجديد <span class="required">*</span></label>
-                                <input type="password" id="newAdminCode" required maxlength="6" pattern="\\d{6}" placeholder="أدخل كود المدير الجديد (6 أرقام)" style="letter-spacing: 2px;">
-                            </div>
-                            <button type="submit" class="btn" style="background-color: var(--danger-color); color: white; border: none; padding: 12px; font-weight: bold; margin-top: 10px;">
-                                <i class="fa-solid fa-floppy-disk" style="margin-left: 5px;"></i>تغيير كود المدير
-                            </button>
-                        </form>
+                    <!-- Cashiers Table Section -->
+                    <div class="stock-actions">
+                        <h2>قائمة حسابات الموظفين (الكاشير)</h2>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>البريد الإلكتروني للموظف</th>
+                                    <th>تاريخ تقديم الطلب</th>
+                                    <th>حالة الحساب</th>
+                                    <th>إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cashiersTableBody">
+                                <!-- Populated dynamically from Supabase -->
+                            </tbody>
+                        </table>
+                        <div class="empty-table-state" id="emptyCashiersState" style="display: none;">
+                            <i class="fa-solid fa-users-slash"></i>
+                            <p>لا يوجد موظفون مسجلون حالياً.</p>
+                        </div>
                     </div>
                 </section>
             </div>
@@ -496,7 +472,7 @@ window.addEventListener('unhandledrejection', function(e) { require('fs').append
     <div class="modal" id="addProductModal">
         <div class="modal-backdrop"></div>
         <div class="modal-content product-form-content">
-            <button class="modal-close" id="closeProductFormModalBtn">&times;</button>
+            <button class="modal-close" id="closeProductFormModalBtn">×</button>
             <h2 id="productModalTitle">إضافة منتج جديد</h2>
             <div class="gold-divider"></div>
             
@@ -534,7 +510,7 @@ window.addEventListener('unhandledrejection', function(e) { require('fs').append
                     </div>
                     <div class="form-group">
                         <label for="prodSupplierPhone">رقم هاتف المورد</label>
-                        <input type="text" id="prodSupplierPhone" placeholder="سيتم تعبئته تلقائياً" readonly style="background-color: #f1f2f6; cursor: not-allowed;">
+                        <input type="text" id="prodSupplierPhone" placeholder="سيتم تعبئته تلقائياً" readonly="" style="background-color: #f1f2f6; cursor: not-allowed;">
                     </div>
                 </div>
 
@@ -553,7 +529,7 @@ window.addEventListener('unhandledrejection', function(e) { require('fs').append
 
                 <div class="form-group">
                     <label>صور المنتج (قم باختيار الصور من جهازك) <span class="required">*</span></label>
-                    <input type="file" id="prodImagesFile" multiple accept="image/*" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; width: 100%; font-family: inherit;">
+                    <input type="file" id="prodImagesFile" multiple="" accept="image/*" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; width: 100%; font-family: inherit;">
                     <div id="existingImagesContainer" style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;"></div>
                     <!-- Hidden field to keep track of existing images when editing -->
                     <input type="hidden" id="prodExistingImages" value="">
@@ -658,7 +634,7 @@ window.addEventListener('unhandledrejection', function(e) { require('fs').append
     <div class="modal" id="addSupplierModal">
         <div class="modal-backdrop"></div>
         <div class="modal-content supplier-form-content">
-            <button class="modal-close" id="closeSupplierFormModalBtn">&times;</button>
+            <button class="modal-close" id="closeSupplierFormModalBtn">×</button>
             <h2 id="supplierModalTitle">إضافة مورد جديد</h2>
             <div class="gold-divider"></div>
             
@@ -667,12 +643,12 @@ window.addEventListener('unhandledrejection', function(e) { require('fs').append
                 
                 <div class="form-group">
                     <label for="supplierNameInput">اسم المورد <span class="required">*</span></label>
-                    <input type="text" id="supplierNameInput" placeholder="مثال: ورشة القفطان الملكي تلمسان" required>
+                    <input type="text" id="supplierNameInput" placeholder="مثال: ورشة القفطان الملكي تلمسان" required="">
                 </div>
                 
                 <div class="form-group">
                     <label for="supplierPhoneInput">رقم الهاتف <span class="required">*</span></label>
-                    <input type="text" id="supplierPhoneInput" placeholder="مثال: 0550112233" required>
+                    <input type="text" id="supplierPhoneInput" placeholder="مثال: 0550112233" required="">
                 </div>
                 
                 <button type="submit" class="btn btn-primary btn-block btn-lg" id="saveSupplierBtn">حفظ المورد</button>
@@ -684,41 +660,32 @@ window.addEventListener('unhandledrejection', function(e) { require('fs').append
     <div class="modal" id="inShopOrderModal" role="dialog" aria-hidden="true">
         <div class="modal-backdrop" id="inShopOrderModalBackdrop"></div>
         <div class="modal-content" style="width: 90%; max-width: 650px; max-height: 90vh; overflow-y: auto; padding: 30px; border-radius: 12px; position: relative;">
-            <button class="modal-close" id="closeInShopOrderModalBtn">&times;</button>
+            <button class="modal-close" id="closeInShopOrderModalBtn">×</button>
             <h2 style="font-size: 20px; font-weight: 700; color: var(--primary-blue); margin-bottom: 10px;"><i class="fa-solid fa-store" style="color: var(--accent-gold); margin-left: 8px;"></i>تسجيل طلب حضوري (من المحل)</h2>
             <div class="gold-divider" style="margin-bottom: 20px;"></div>
             <form id="inShopOrderForm" onsubmit="event.preventDefault();">
                 <!-- Add Item Form Block -->
                 <div style="background-color: var(--card-bg); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
                     <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 10px; color: var(--text-color);">إضافة منتج للطلب</h3>
-                    <div class="form-group" style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px;">اختر المنتج</label>
-                        <select id="inShopProductSelect" style="display: none;">
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label for="inShopProductSelect" style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">اختر المنتج</label>
+                        <select id="inShopProductSelect" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); font-family: inherit; font-size: 14px;">
                             <option value="">-- اختر المنتج --</option>
                         </select>
-                        <div style="position: relative; margin-bottom: 12px; direction: rtl;">
-                            <i class="fa-solid fa-magnifying-glass" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #888; font-size: 13px;"></i>
-                            <input type="text" id="inShopSearchInput" placeholder="بحث باسم المنتج (مثال: فستان)..." style="width: 100%; padding: 8px 35px 8px 12px; border-radius: 20px; border: 1.5px solid var(--border-color); outline: none; font-size: 13px; font-weight: 600; background: var(--bg-color); color: var(--text-main); font-family: inherit;">
-                        </div>
-                        <div id="inShopProductsGrid" class="in-shop-products-grid">
-                            <!-- Populated dynamically with product cards -->
-                        </div>
                     </div>
                     
-                    <div class="form-row" style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 12px;">
-                        <div id="inShopColorSection" class="form-group" style="margin-bottom: 5px; width: 100%; display: none; transition: all 0.3s ease;">
-                            <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px;">اللون</label>
-                            <div id="inShopColorOptions" style="display: flex; flex-wrap: wrap; gap: 8px; min-height: 38px; align-items: center; width: 100%;">
-                                <span style="font-size: 13px; color: var(--text-muted); font-style: italic;">يرجى اختيار المنتج أولاً...</span>
-                            </div>
-                            <input type="hidden" id="inShopColorSelect" value="">
+                    <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 12px;">
+                        <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                            <label for="inShopColorSelect" style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">اللون</label>
+                            <select id="inShopColorSelect" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); font-family: inherit; font-size: 14px;">
+                                <option value="">-- اختر اللون --</option>
+                            </select>
                         </div>
-                        <div id="inShopSizeSection" class="form-group" style="margin-bottom: 0; width: 100%; display: none; transition: all 0.3s ease;">
-                            <label style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 13px;">المقاس</label>
-                            <div id="inShopSizeOptions" style="display: flex; flex-wrap: wrap; gap: 8px; min-height: 38px; align-items: center; width: 100%;">
-                                <span style="font-size: 13px; color: var(--text-muted); font-style: italic;">يرجى اختيار اللون أولاً...</span>
-                            </div>
-                            <input type="hidden" id="inShopSizeSelect" value="">
+                        <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                            <label for="inShopSizeSelect" style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">المقاس</label>
+                            <select id="inShopSizeSelect" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); font-family: inherit; font-size: 14px;">
+                                <option value="">-- اختر المقاس --</option>
+                            </select>
                         </div>
                     </div>
 
@@ -729,7 +696,7 @@ window.addEventListener('unhandledrejection', function(e) { require('fs').append
                         </div>
                         <div class="form-group" style="flex: 1; margin-bottom: 0;">
                             <label for="inShopPriceInput" style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">سعر البيع (د.ج)</label>
-                            <input type="number" id="inShopPriceInput" min="0" readonly style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); font-family: inherit; font-size: 14px; background-color: #f1f2f6; cursor: not-allowed;">
+                            <input type="number" id="inShopPriceInput" min="0" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); font-family: inherit; font-size: 14px;">
                         </div>
                     </div>
 
@@ -770,18 +737,12 @@ window.addEventListener('unhandledrejection', function(e) { require('fs').append
 
                 <!-- Payment Type & Partial Payments (Versements) Setup -->
                 <div id="inShopPaymentModeSection" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px; text-align: right; display: none; direction: rtl;">
-                    <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 12px;">
-                        <div class="form-group" style="flex: 1; margin-bottom: 0;">
-                            <label for="inShopPaymentType" style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">طريقة الدفع</label>
-                            <select id="inShopPaymentType" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); font-family: inherit; font-size: 14px;">
-                                <option value="full">دفع كامل (زبون حضوري)</option>
-                                <option value="partial">دفع جزئي / بيع بالدين (Versement)</option>
-                            </select>
-                        </div>
-                        <div class="form-group" style="flex: 1; margin-bottom: 0;">
-                            <label for="inShopRemiseInput" style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">تخفيض للزبون (Remise د.ج)</label>
-                            <input type="number" id="inShopRemiseInput" value="0" min="0" placeholder="أدخل قيمة التخفيض..." style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); font-family: inherit; font-size: 14px; outline: none;">
-                        </div>
+                    <div class="form-group" style="margin-bottom: 12px;">
+                        <label for="inShopPaymentType" style="display: block; margin-bottom: 5px; font-weight: 600; font-size: 13px;">طريقة الدفع</label>
+                        <select id="inShopPaymentType" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); font-family: inherit; font-size: 14px;">
+                            <option value="full">دفع كامل (زبون حضوري)</option>
+                            <option value="partial">دفع جزئي / بيع بالدين (Versement)</option>
+                        </select>
                     </div>
 
                     <div id="inShopDebtFields" style="display: none; background: rgba(212, 175, 55, 0.04); border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
@@ -806,7 +767,7 @@ window.addEventListener('unhandledrejection', function(e) { require('fs').append
                     </div>
                 </div>
 
-                <button type="button" class="btn btn-primary btn-block btn-lg" id="saveInShopOrderBtn" style="width: 100%; padding: 12px; font-size: 16px; font-weight: bold;" disabled>تأكيد وطبع الوصل</button>
+                <button type="button" class="btn btn-primary btn-block btn-lg" id="saveInShopOrderBtn" style="width: 100%; padding: 12px; font-size: 16px; font-weight: bold;" disabled="">تأكيد وطبع الوصل</button>
             </form>
         </div>
     </div>
@@ -815,14 +776,8 @@ window.addEventListener('unhandledrejection', function(e) { require('fs').append
     <div class="modal" id="expensesModal">
         <div class="modal-backdrop"></div>
         <div class="modal-content expenses-modal-content" style="width: 90%; max-width: 950px; max-height: 85vh; overflow-y: auto; padding: 30px;">
-            <button class="modal-close" id="closeExpensesModalBtn">&times;</button>
-            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 12px; padding-left: 35px;">
-                <h2 style="font-size: 20px; font-weight: 700; color: var(--primary-blue); margin: 0;"><i class="fa-solid fa-file-invoice-dollar" style="color: var(--accent-gold); margin-left: 8px;"></i>المصاريف الجانبية (الخسائر من الكاش)</h2>
-                <div style="position: relative; flex: 1; max-width: 340px; min-width: 220px;">
-                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #888;"></i>
-                    <input type="text" id="expensesSearchInput" placeholder="بحث برقم التذكرة أو السبب (مثال: #14)..." style="width: 100%; padding: 8px 35px 8px 12px; border-radius: 20px; border: 1.5px solid var(--accent-gold); outline: none; font-size: 13px; font-weight: 600; background: var(--bg-color); color: var(--text-main); box-shadow: var(--shadow-sm);">
-                </div>
-            </div>
+            <button class="modal-close" id="closeExpensesModalBtn">×</button>
+            <h2 style="font-size: 20px; font-weight: 700; color: var(--primary-blue); margin-bottom: 10px;"><i class="fa-solid fa-file-invoice-dollar" style="color: var(--accent-gold); margin-left: 8px;"></i>المصاريف الجانبية (الخسائر من الكاش)</h2>
             <div class="gold-divider" style="margin-bottom: 20px;"></div>
             
             <div class="expenses-layout" style="display: flex; gap: 25px; flex-wrap: wrap;">
@@ -832,11 +787,11 @@ window.addEventListener('unhandledrejection', function(e) { require('fs').append
                     <form id="addExpenseForm">
                         <div class="form-group" style="margin-bottom: 15px;">
                             <label for="expenseAmount" style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px;">المبلغ (د.ج) <span class="required">*</span></label>
-                            <input type="number" id="expenseAmount" placeholder="أدخل المبلغ المسحوب..." required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); outline: none;">
+                            <input type="number" id="expenseAmount" placeholder="أدخل المبلغ المسحوب..." required="" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); outline: none;">
                         </div>
                         <div class="form-group" style="margin-bottom: 20px;">
                             <label for="expenseReason" style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px;">السبب / البيان <span class="required">*</span></label>
-                            <input type="text" id="expenseReason" placeholder="مثال: فطور للعمال، قارورة ماء..." required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); outline: none;">
+                            <input type="text" id="expenseReason" placeholder="مثال: فطور للعمال، قارورة ماء..." required="" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); outline: none;">
                         </div>
                         <button type="submit" class="btn btn-primary btn-block" style="width: 100%; padding: 10px; font-weight: bold; background-color: var(--accent-gold); border-color: var(--accent-gold); color: white;">
                             <i class="fa-solid fa-floppy-disk" style="margin-left: 5px;"></i>تسجيل المصروف
@@ -880,7 +835,7 @@ window.addEventListener('unhandledrejection', function(e) { require('fs').append
     <div class="modal" id="debtDetailsModal">
         <div class="modal-backdrop" id="debtDetailsModalBackdrop"></div>
         <div class="modal-content" style="width: 90%; max-width: 900px; max-height: 90vh; overflow-y: auto; padding: 30px; border-radius: 12px;">
-            <button class="modal-close" id="closeDebtDetailsModalBtn">&times;</button>
+            <button class="modal-close" id="closeDebtDetailsModalBtn">×</button>
             <h2 style="font-size: 20px; font-weight: 700; color: var(--primary-blue); margin-bottom: 10px;">
                 <i class="fa-solid fa-hand-holding-dollar" style="color: var(--accent-gold); margin-left: 8px;"></i>تفاصيل الدين والدفعات المسجلة
             </h2>
@@ -907,7 +862,7 @@ window.addEventListener('unhandledrejection', function(e) { require('fs').append
                         <input type="hidden" id="recordPaymentDebtId" value="">
                         <div class="form-group" style="margin-bottom: 15px;">
                             <label for="paymentAmountInput" style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 5px;">المبلغ المدفوع (د.ج) <span class="required">*</span></label>
-                            <input type="number" id="paymentAmountInput" placeholder="أدخل مبلغ الدفعة..." required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); outline: none;">
+                            <input type="number" id="paymentAmountInput" placeholder="أدخل مبلغ الدفعة..." required="" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); outline: none;">
                         </div>
                         <div style="display: flex; gap: 10px;">
                             <button type="submit" class="btn btn-primary" style="flex: 1; padding: 10px; font-weight: bold; background-color: var(--accent-gold); border-color: var(--accent-gold); color: white; display: flex; align-items: center; justify-content: center; gap: 5px;">
@@ -1030,19 +985,15 @@ window.addEventListener('unhandledrejection', function(e) { require('fs').append
 
             <div class="invoice-divider"></div>
 
-            <div class="invoice-footer" style="text-align: center; font-size: 11px; line-height: 1.4; color: #555;">
-                <div style="margin: 10px auto; padding: 6px 8px; border: 1px dashed #777; border-radius: 4px; background-color: #fcfcfc; color: #111; font-size: 10.5px; line-height: 1.5; text-align: center;">
-                    <div style="font-weight: bold; margin-bottom: 2px;">تنبيه:</div>
-                    <div>السلع المباعة تُستبدل ولا تُرد خلال مدة أقصاها 48 ساعة من تاريخ الشراء، مع إحضار فاتورة الشراء.</div>
-                </div>
-                <p style="margin: 4px 0;">شكراً لثقتكم بـ Asel Butik!</p>
-                <p style="margin: 4px 0;">لأي استفسار يرجى الاتصال بنا على: <span id="printShopPhone">0555123456</span></p>
+            <div class="invoice-footer">
+                <p>شكراً لثقتكم بـ Asel Butik!</p>
+                <p>لأي استفسار يرجى الاتصال بنا على: <span id="printShopPhone">0555123456</span></p>
             </div>
         </div>
     </div>
 
     <!-- Login Container -->
-    <div id="loginContainer" style="display: none;" class="login-container">
+    <div id="loginContainer" style="display: flex;" class="login-container">
         <div class="login-card">
             <div class="login-logo">
                 <h2>Asel Butik</h2>
@@ -1050,15 +1001,23 @@ window.addEventListener('unhandledrejection', function(e) { require('fs').append
             </div>
             <div class="gold-divider" style="margin: 15px 0 25px 0;"></div>
             <form id="loginForm">
-                <div class="form-group" style="margin-bottom: 20px; text-align: center;">
-                    <label for="loginPin" style="display: block; font-size: 16px; font-weight: 700; margin-bottom: 15px;">رمز الدخول (PIN) <span class="required">*</span></label>
-                    <div style="position: relative; max-width: 250px; margin: 0 auto;">
-                        <input type="password" id="loginPin" placeholder="••••••" maxlength="6" pattern="\d{6}" required style="letter-spacing: 12px; text-align: center; font-size: 28px; padding: 15px; font-family: monospace; font-weight: bold; width: 100%; border-radius: 8px; border: 2px solid var(--border-color);">
+                <div class="form-group" style="margin-bottom: 20px; text-align: right;">
+                    <label for="loginEmail" style="display: block; font-size: 14px; font-weight: 700; margin-bottom: 8px;">البريد الإلكتروني <span class="required">*</span></label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="loginEmail" placeholder="example@gmail.com" required="">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 20px; text-align: right;">
+                    <label for="loginPassword" style="display: block; font-size: 14px; font-weight: 700; margin-bottom: 8px;">كلمة المرور <span class="required">*</span></label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="loginPassword" placeholder="••••••••" required="">
                     </div>
                 </div>
                 <div id="loginError" class="login-error-message" style="display: none;"></div>
                 <button type="submit" class="btn btn-primary btn-block btn-lg" id="loginSubmitBtn" style="width: 100%; font-weight: bold; background-color: var(--accent-gold); border-color: var(--accent-gold); color: white;">
-                    <span id="loginBtnText"><i class="fa-solid fa-right-to-bracket" style="margin-left: 5px;"></i>دخول</span>
+                    <span id="loginBtnText" style="display: inline-block;"><i class="fa-solid fa-right-to-bracket" style="margin-left: 5px;"></i>تسجيل الدخول</span>
                     <span id="loginBtnLoading" style="display: none;"><i class="fa-solid fa-spinner fa-spin"></i> جاري التحقق...</span>
                 </button>
             </form>
@@ -1089,28 +1048,15 @@ window.addEventListener('unhandledrejection', function(e) { require('fs').append
         }
     </script>
     <script src="../config.js"></script>
-    <script src="../admin.js?v=1.4.3"></script>
+    <script src="../admin.js"></script><div class="custom-alert-backdrop"><div class="custom-alert-card"><div class="custom-alert-icon-container"><i></i></div><div class="custom-alert-title"></div><div class="custom-alert-text"></div><button class="custom-alert-button">موافق</button></div></div>
     <script>
         if ('serviceWorker' in navigator) {
-            const isElectron = navigator.userAgent.toLowerCase().includes('electron');
-            if (isElectron) {
-                // Unregister any active service worker in Electron
-                navigator.serviceWorker.getRegistrations().then(registrations => {
-                    for (let registration of registrations) {
-                        registration.unregister().then(() => {
-                            console.log('Unregistered service worker in Electron');
-                        });
-                    }
-                });
-            } else {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('../sw.js')
-                        .then(reg => console.log('Service Worker registered successfully:', reg.scope))
-                        .catch(err => console.error('Service Worker registration failed:', err));
-                });
-            }
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('../sw.js')
+                    .then(reg => console.log('Service Worker registered successfully:', reg.scope))
+                    .catch(err => console.error('Service Worker registration failed:', err));
+            });
         }
     </script>
-</body>
-</html>
+
 

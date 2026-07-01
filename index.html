@@ -33,7 +33,7 @@
                 </div>
             </div>
 
-            <div class="nav-actions" style="display: none;">
+            <div class="nav-actions">
                 <button class="cart-trigger" id="cartTrigger" aria-label="سلة التسوق">
                     <i class="fa-solid fa-bag-shopping"></i>
                     <span class="cart-count" id="cartCount">0</span>
@@ -182,6 +182,7 @@
     <div class="modal" id="cartModal" role="dialog" aria-hidden="true">
         <div class="modal-backdrop"></div>
         <div class="cart-modal-content">
+            <div class="cart-drag-handle"></div>
             <div class="cart-header">
                 <h2>سلة التسوق</h2>
                 <button class="modal-close-simple" id="cartClose">&times;</button>
@@ -300,6 +301,12 @@
             <button class="btn btn-gold" id="successCloseBtn">العودة للمتجر</button>
         </div>
     </div>
+
+    <!-- Floating Luxury Cart Icon Badge -->
+    <button class="floating-cart-btn" id="floatingCartBtn" aria-label="سلة التسوق" style="display: none;">
+        <i class="fa-solid fa-bag-shopping"></i>
+        <span class="floating-cart-count" id="floatingCartCount">0</span>
+    </button>
 
     <!-- Config and Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.js"></script>

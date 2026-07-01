@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل كاشير جديد | أسيل بوتيك</title>
+    <!-- Cairo Font for Arabic, Playfair Display for numbers and elegance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Admin Specific Stylesheet -->
+    <link rel="stylesheet" href="../admin.css?v=2">
+    
+    <!-- PWA Manifest & App Icons -->
+    <link rel="manifest" href="../admin/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="../images/logo-192.png">
+    <link rel="icon" type="image/png" href="../images/logo-192.png">
+</head>
+<body style="background-color: var(--bg-light); margin: 0; padding: 0;">
+    <!-- Register Container -->
+    <div class="login-container">
+        <div class="login-card" id="registrationCard">
+            <div class="login-logo">
+                <h2>أسيل بوتيك</h2>
+                <span>تسجيل حساب كاشير جديد</span>
+            </div>
+            <div class="gold-divider" style="margin: 15px 0 25px 0;"></div>
+            
+            <form id="registerForm">
+                <div class="form-group" style="margin-bottom: 20px; text-align: right;">
+                    <label for="regEmail" style="display: block; font-size: 14px; font-weight: 700; margin-bottom: 8px;">البريد الإلكتروني للعمل <span class="required">*</span></label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" id="regEmail" placeholder="example@gmail.com" required style="width: 100%; font-family: inherit;">
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 20px; text-align: right;">
+                    <label for="regPassword" style="display: block; font-size: 14px; font-weight: 700; margin-bottom: 8px;">كلمة المرور <span class="required">*</span></label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="regPassword" placeholder="••••••••" required style="width: 100%; font-family: inherit;">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px; text-align: right;">
+                    <label for="regConfirmPassword" style="display: block; font-size: 14px; font-weight: 700; margin-bottom: 8px;">تأكيد كلمة المرور <span class="required">*</span></label>
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-lock-open"></i>
+                        <input type="password" id="regConfirmPassword" placeholder="••••••••" required style="width: 100%; font-family: inherit;">
+                    </div>
+                </div>
+
+                <div id="registerError" class="login-error-message" style="display: none; background-color: rgba(192, 57, 43, 0.1); color: var(--danger-color); padding: 10px; border-radius: 6px; margin-bottom: 20px; font-size: 13px; text-align: center; border: 1px solid rgba(192, 57, 43, 0.2);"></div>
+
+                <button type="submit" class="btn btn-primary btn-block btn-lg" id="registerSubmitBtn" style="width: 100%; font-weight: bold; background-color: var(--accent-gold); border-color: var(--accent-gold); color: white;">
+                    <span id="registerBtnText"><i class="fa-solid fa-user-plus" style="margin-left: 5px;"></i>تقديم طلب التسجيل</span>
+                    <span id="registerBtnLoading" style="display: none;"><i class="fa-solid fa-spinner fa-spin"></i> جاري التسجيل...</span>
+                </button>
+                
+                <div style="margin-top: 20px; text-align: center;">
+                    <a href="../admin/" style="color: var(--text-muted); text-decoration: none; font-size: 13px;"><i class="fa-solid fa-right-to-bracket" style="margin-left: 5px;"></i>العودة لتسجيل الدخول</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.108.2/dist/umd/supabase.js"></script>
+    <script>
+        if (typeof supabase === 'undefined') {
+            console.warn("Critical CDN libraries failed to load. Purging Service Worker cache and reloading...");
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then(regs => {
+                    for (let reg of regs) reg.unregister();
+                });
+            }
+            if ('caches' in window) {
+                caches.keys().then(keys => {
+                    for (let key of keys) caches.delete(key);
+                }).then(() => {
+                    window.location.reload();
+                });
+            }
+        }
+    </script>
+    <script src="../config.js"></script>
+    <script>
+        // Initialize Supabase Client
+        let supabaseClient;
+        try {
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } catch (err) {
+            console.error("Supabase Init Error:", err);
+        }
+
+        const registerForm = document.getElementById('registerForm');
+        const registrationCard = document.getElementById('registrationCard');
+        const registerError = document.getElementById('registerError');
+        const registerBtnText = document.getElementById('registerBtnText');
+        const registerBtnLoading = document.getElementById('registerBtnLoading');
+
+        if (registerForm) {
+            registerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const email = document.getElementById('regEmail').value.trim();
+                const password = document.getElementById('regPassword').value;
+                const confirmPassword = document.getElementById('regConfirmPassword').value;
+
+                // Validations
+                if (password.length < 6) {
+                    showError('كلمة المرور يجب أن لا تقل عن 6 أحرف أو أرقام.');
+                    return;
+                }
+
+                if (password !== confirmPassword) {
+                    showError('كلمتا المرور غير متطابقتين.');
+                    return;
+                }
+
+                try {
+                    setLoading(true);
+                    registerError.style.display = 'none';
+
+                    // 1. Sign up user in Supabase Auth
+                    const { data, error } = await supabaseClient.auth.signUp({
+                        email,
+                        password
+                    });
+
+                    if (error) throw error;
+                    if (!data.user) throw new Error('فشل إنشاء الحساب. الرجاء المحاولة مجدداً.');
+
+                    // 2. Insert record into public.cashiers with status pending
+                    const { error: dbError } = await supabaseClient
+                        .from('cashiers')
+                        .insert({
+                            id: data.user.id,
+                            email: email,
+                            status: 'pending'
+                        });
+
+                    if (dbError) {
+                        // Clean up auth user if DB insert fails
+                        console.error('DB Insert failed:', dbError);
+                        throw dbError;
+                    }
+
+                    // 3. Clear session immediately to prevent auto-login
+                    await supabaseClient.auth.signOut();
+
+                    // 4. Show success card
+                    registrationCard.innerHTML = `
+                        <div class="login-logo">
+                            <h2>أسيل بوتيك</h2>
+                            <span style="color: #2ecc71; font-size: 16px; font-weight: bold; margin-top: 15px; display: block;">
+                                <i class="fa-solid fa-circle-check" style="margin-left: 5px;"></i>تم تسجيل طلبك بنجاح!
+                            </span>
+                        </div>
+                        <div class="gold-divider" style="margin: 20px 0;"></div>
+                        <p style="text-align: center; color: var(--text-muted); font-size: 14px; line-height: 1.6; margin-bottom: 25px;">
+                            لقد تم إنشاء حساب الكاشير الخاص بك بنجاح وهو الآن قيد الانتظار لموافقة مدير المتجر.
+                            <br>يمكنك محاولة تسجيل الدخول بعد تأكيد حسابك وتفعيله من قبل الإدارة.
+                        </p>
+                        <a href="../admin/" class="btn btn-primary btn-block btn-lg" style="margin-top: 20px; text-decoration: none; text-align: center; display: block; background-color: var(--accent-gold); border-color: var(--accent-gold); color: white; border-radius: 6px;">الذهاب إلى تسجيل الدخول</a>
+                    `;
+
+                } catch (err) {
+                    console.error('Registration error:', err);
+                    showError(err.message || 'حدث خطأ غير متوقع أثناء التسجيل.');
+                    setLoading(false);
+                }
+            });
+        }
+
+        function showError(msg) {
+            if (registerError) {
+                registerError.textContent = msg;
+                registerError.style.display = 'block';
+            }
+        }
+
+        function setLoading(isLoading) {
+            if (isLoading) {
+                if (registerBtnText) registerBtnText.style.display = 'none';
+                if (registerBtnLoading) registerBtnLoading.style.display = 'inline-block';
+            } else {
+                if (registerBtnText) registerBtnText.style.display = 'inline-block';
+                if (registerBtnLoading) registerBtnLoading.style.display = 'none';
+            }
+        }
+
+        if ('serviceWorker' in navigator) {
+            const isElectron = navigator.userAgent.toLowerCase().includes('electron');
+            if (isElectron) {
+                // Unregister any active service worker in Electron
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                    for (let registration of registrations) {
+                        registration.unregister().then(() => {
+                            console.log('Unregistered service worker in Electron');
+                        });
+                    }
+                });
+            } else {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('../sw.js')
+                        .then(reg => console.log('Service Worker registered successfully:', reg.scope))
+                        .catch(err => console.error('Service Worker registration failed:', err));
+                });
+            }
+        }
+    </script>
+</body>
+</html>

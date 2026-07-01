@@ -143,9 +143,9 @@ async function run() {
       INSERT INTO settings (id, hero_title, hero_subtitle, about_text, phone_number, email, location_url, facebook_url, instagram_url, tiktok_url)
       VALUES (
         1,
-        'مرحباً بكم في أسيل بوتيك',
+        'مرحباً بكم في Asel Butik',
         'للأزياء النسائية الفاخرة',
-        'تأسست أسيل بوتيك لتوفير أرقى التصاميم والملابس النسائية التقليدية والعصرية. نحرص دائماً على اختيار أجود الأقمشة وتوفير تجربة تسوق فريدة لزبائننا الكريم.',
+        'تأسست Asel Butik لتوفير أرقى التصاميم والملابس النسائية التقليدية والعصرية. نحرص دائماً على اختيار أجود الأقمشة وتوفير تجربة تسوق فريدة لزبائننا الكريم.',
         '0555123456',
         'contact@aselbutik.com',
         'https://maps.google.com',
