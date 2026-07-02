@@ -27,8 +27,7 @@ const filesToCopy = [
     'admin',
     'sw.js',
     'manifest.json',
-    'register',
-    'print-receipt.html'
+    'register'
 ];
 
 function copyRecursiveSync(src, dest) {

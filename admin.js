@@ -182,37 +182,30 @@
 
 // Desktop App (Electron) Print Helper
 async function triggerPrint(printerType = 'receipt') {
-    await new Promise(resolve => setTimeout(resolve, 500));
+    const invoiceContainer = document.getElementById('printInvoiceContainer');
+    const barcodeContainer = document.getElementById('printBarcodeContainer');
 
     if (printerType === 'receipt') {
-        if (window.electronAPI && window.electronAPI.printSilent) {
-            const deviceName = localStorage.getItem('receiptPrinterName') || '';
-            try {
-                const result = await window.electronAPI.printSilent({ deviceName });
-                if (!result.success) {
-                    console.error("Silent receipt print failed:", result.error);
-                    printReceiptViaIframe();
-                }
-            } catch (err) {
-                console.error("IPC Error:", err);
-                printReceiptViaIframe();
-            }
-        } else {
-            printReceiptViaIframe();
-        }
-        return;
+        if (invoiceContainer) invoiceContainer.style.setProperty('display', 'block', 'important');
+        if (barcodeContainer) barcodeContainer.style.setProperty('display', 'none', 'important');
+    } else {
+        if (invoiceContainer) invoiceContainer.style.setProperty('display', 'none', 'important');
+        if (barcodeContainer) barcodeContainer.style.setProperty('display', 'flex', 'important');
     }
 
     if (window.electronAPI && window.electronAPI.printSilent) {
         let deviceName = '';
-        if (printerType === 'barcode') {
+        if (printerType === 'receipt') {
+            deviceName = localStorage.getItem('receiptPrinterName') || '';
+        } else if (printerType === 'barcode') {
             deviceName = localStorage.getItem('barcodePrinterName') || '';
         }
+        
         try {
-            let options = { deviceName: deviceName };
-            const result = await window.electronAPI.printSilent(options);
+            const result = await window.electronAPI.printSilent({ deviceName: deviceName });
             if (!result.success) {
                 console.error('Silent print failed:', result.error);
+                // Fallback if silent print fails completely for some reason
                 window.print();
             }
         } catch (e) {
@@ -220,33 +213,8 @@ async function triggerPrint(printerType = 'receipt') {
             window.print();
         }
     } else {
+        // Normal web browser mode
         window.print();
-    }
-}
-
-// Print receipt using dedicated print page — most reliable for thermal printers
-function printReceiptViaIframe() {
-    const printContainer = document.getElementById('printInvoiceContainer');
-    if (!printContainer) return;
-
-    const receiptHTML = printContainer.innerHTML;
-
-    // Store receipt in localStorage so the print page can read it
-    try {
-        localStorage.setItem('asel_print_receipt', receiptHTML);
-    } catch(e) {
-        console.error('localStorage error:', e);
-        alert('خطأ في حفظ بيانات الوصل.');
-        return;
-    }
-
-    // Open the dedicated print page
-    const printPageUrl = window.location.origin + '/print-receipt.html';
-    const printWindow = window.open(printPageUrl, '_blank');
-
-    if (!printWindow) {
-        // Fallback: try iframe if popup blocked
-        alert('يرجى السماح بفتح تبويب جديد (Popups) للطباعة، ثم حاول مجدداً.');
     }
 }
 
@@ -1630,164 +1598,42 @@ function generateUniqueBarcode() {
 async function printProductBarcodeLabel(product) {
     const priceFormatted = Number(product.price).toLocaleString('ar-DZ') + ' د.ج';
     
-    const htmlContent = `
-        <!DOCTYPE html>
-        <html dir="rtl" lang="ar">
-        <head>
-            <meta charset="UTF-8">
-            <title>ملصق الباركود - ${product.name}</title>
-            <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800&display=swap" rel="stylesheet">
-            <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-            <style>
-                * {
-                    box-sizing: border-box !important;
-                }
-                html, body {
-                    margin: 0;
-                    padding: 0;
-                    width: 100%;
-                    height: 100%;
-                    overflow: hidden;
-                    font-family: 'Cairo', sans-serif;
-                    background: #fff;
-                    color: #000;
-                }
-                body {
-                    display: flex;
-                    align-items: flex-start;
-                    justify-content: center;
-                    padding: 10px 2px 2px 2px;
-                }
-                .label-container {
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: flex-start;
-                    padding-top: 6px;
-                    width: 100%;
-                    max-width: 100%;
-                    text-align: center;
-                    overflow: hidden;
-                    page-break-inside: avoid;
-                    break-inside: avoid;
-                }
-                .brand-title {
-                    font-size: 11px;
-                    font-weight: 800;
-                    line-height: 1.1;
-                    margin: 0 0 2px 0;
-                    color: #000;
-                }
-                .product-name {
-                    font-size: 11px;
-                    font-weight: 700;
-                    line-height: 1.1;
-                    margin: 1px 0;
-                    max-width: 96%;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    color: #000;
-                }
-                .price {
-                    font-size: 11px;
-                    font-weight: 800;
-                    line-height: 1.1;
-                    margin: 0 0 2px 0;
-                    color: #000;
-                }
-                #barcode {
-                    max-width: 96%;
-                    max-height: 45px;
-                    width: auto;
-                    height: auto;
-                    display: block;
-                    margin: 0 auto;
-                    object-fit: contain;
-                }
-                @media print {
-                    @page {
-                        margin: 0;
-                    }
-                    html, body {
-                        width: 100%;
-                        height: 100%;
-                        margin: 0;
-                        padding: 0;
-                        overflow: hidden;
-                    }
-                    body {
-                        padding-top: 10px;
-                    }
-                }
-            </style>
-        </head>
-        <body>
-            <div class="label-container">
-                <div class="brand-title">Asel Butik</div>
-                <div class="product-name">${product.name}</div>
-                <div class="price">السعر: ${priceFormatted}</div>
-                <svg id="barcode"></svg>
-            </div>
-            <script>
-                try {
-                    JsBarcode("#barcode", "${product.barcode}", {
-                        format: "CODE128",
-                        lineColor: "#000",
-                        width: 1.3,
-                        height: 32,
-                        displayValue: true,
-                        font: "Cairo",
-                        fontSize: 10,
-                        fontOptions: "bold",
-                        textMargin: 1,
-                        margin: 1
-                    });
-                } catch(e) {
-                    console.error("JsBarcode generation failed:", e);
-                }
-                
-                // If not in electron, trigger browser print
-                if (!window.electronAPI) {
-                    const triggerBarcodePrint = () => {
-                        setTimeout(() => {
-                            try { window.print(); window.close(); } catch(e){}
-                        }, 500);
-                    };
-                    if (document.readyState === 'complete') {
-                        triggerBarcodePrint();
-                    } else {
-                        window.addEventListener('load', triggerBarcodePrint);
-                    }
-                }
-            </script>
-        </body>
-        </html>
+    const barcodeContainer = document.getElementById('printBarcodeContainer');
+    if (!barcodeContainer) {
+        alert("حاوية طباعة الباركود غير موجودة.");
+        return;
+    }
+
+    barcodeContainer.innerHTML = `
+        <div class="label-container" style="display:flex; flex-direction:column; align-items:center; justify-content:center; width: 100%; max-width: 320px; margin: 0 auto; padding-top: 5px; text-align: center; direction: rtl; font-family: 'Cairo', sans-serif;">
+            <div style="font-size:14px; font-weight:700; color:#d4af37; margin-bottom:2px;">Asel Butik</div>
+            <div style="font-size:13px; font-weight:600; margin:2px 0; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${product.name}</div>
+            <div style="font-size:14px; font-weight:700; margin:2px 0 6px 0;">السعر: ${priceFormatted}</div>
+            <svg id="barcode-svg" style="width:100%; max-height:70px;"></svg>
+        </div>
     `;
 
-    if (window.electronAPI && window.electronAPI.printSilent) {
-        // Desktop App Mode
-        const deviceName = localStorage.getItem('barcodePrinterName') || '';
-        try {
-            const result = await window.electronAPI.printSilent({ deviceName, html: htmlContent });
-            if (!result.success) {
-                console.error("Silent barcode print failed:", result.error);
-                alert("فشلت الطباعة الصامتة: " + result.error);
-            }
-        } catch (err) {
-            console.error("IPC Error:", err);
-            alert("خطأ في الاتصال بنظام الطباعة.");
-        }
-    } else {
-        // Web Browser Mode
-        const printWindow = window.open('', '_blank', 'width=500,height=400');
-        if (!printWindow) {
-            alert('يرجى السماح بالنوافذ المنبثقة (Popups) لطباعة ملصق الباركود.');
-            return;
-        }
-        printWindow.document.write(htmlContent);
-        printWindow.document.close();
+    try {
+        JsBarcode("#barcode-svg", product.barcode, {
+            format: "CODE128",
+            lineColor: "#000",
+            width: 2,
+            height: 50,
+            displayValue: true,
+            font: "Cairo",
+            fontSize: 14,
+            fontOptions: "bold",
+            textMargin: 2,
+            margin: 2
+        });
+    } catch(e) {
+        console.error("JsBarcode generation failed:", e);
     }
+    
+    // Allow DOM to update
+    setTimeout(() => {
+        triggerPrint('barcode');
+    }, 100);
 }
 
 // Setup Product add/edit modal form
