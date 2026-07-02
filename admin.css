@@ -848,6 +848,12 @@ body {
 }
 
 @media print {
+    /* Tell Chrome the physical page is 80mm wide — fixes tiny preview */
+    @page {
+        size: 80mm auto;
+        margin: 0;
+    }
+
     /* Completely remove layout space of non-print elements */
     body > * {
         display: none !important;
