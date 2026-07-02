@@ -182,7 +182,7 @@
 
 // Desktop App (Electron) Print Helper
 async function triggerPrint(printerType = 'receipt') {
-    await new Promise(resolve => setTimeout(resolve, 300));
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     if (printerType === 'receipt') {
         if (window.electronAPI && window.electronAPI.printSilent) {
@@ -191,14 +191,14 @@ async function triggerPrint(printerType = 'receipt') {
                 const result = await window.electronAPI.printSilent({ deviceName });
                 if (!result.success) {
                     console.error("Silent receipt print failed:", result.error);
-                    openReceiptPopup();
+                    window.print();
                 }
             } catch (err) {
                 console.error("IPC Error:", err);
-                openReceiptPopup();
+                window.print();
             }
         } else {
-            openReceiptPopup();
+            window.print();
         }
         return;
     }
@@ -224,110 +224,6 @@ async function triggerPrint(printerType = 'receipt') {
         // Normal web browser mode
         window.print();
     }
-}
-
-// Open a standalone popup window with ONLY the receipt content for reliable thermal printing
-function openReceiptPopup() {
-    const printContainer = document.getElementById('printInvoiceContainer');
-    if (!printContainer) return;
-    
-    const receiptHTML = printContainer.innerHTML;
-    
-    const fullHTML = `<!DOCTYPE html>
-<html dir="rtl" lang="ar">
-<head>
-    <meta charset="UTF-8">
-    <title>طباعة الوصل</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        @page {
-            size: 80mm auto;
-            margin: 0;
-        }
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        html, body {
-            width: 80mm;
-            margin: 0;
-            padding: 0;
-            font-family: 'Cairo', sans-serif;
-            background: #fff;
-            color: #000;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 0;
-        }
-        .receipt-wrapper {
-            width: 72mm;
-            padding: 4mm 4mm 10mm 4mm;
-            margin: 0;
-        }
-        .invoice-box {
-            width: 100%;
-            font-family: 'Cairo', sans-serif;
-            color: #000;
-            background: #fff;
-            direction: rtl;
-            text-align: right;
-        }
-        .invoice-header { text-align: center; margin-bottom: 12px; }
-        .invoice-header h2 { font-size: 16px; margin-bottom: 2px; font-weight: bold; }
-        .invoice-header p { font-size: 12px; margin: 0; }
-        .invoice-meta { display: flex; justify-content: space-between; font-size: 11px; margin-top: 10px; }
-        .invoice-divider { border-top: 1px dashed #000; margin: 10px 0; }
-        .invoice-client-info { font-size: 12px; margin-bottom: 12px; line-height: 1.5; }
-        .invoice-client-info h3 { font-size: 13px; font-weight: bold; margin-bottom: 6px; }
-        .invoice-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        .invoice-table th, .invoice-table td { padding: 6px 0; vertical-align: top; }
-        .invoice-table th { border-bottom: 1px dashed #000; font-weight: bold; text-align: right; }
-        .invoice-table td { border-bottom: 1px dotted #ccc; text-align: right; }
-        .invoice-table th:first-child, .invoice-table td:first-child { text-align: right; width: 45%; }
-        .invoice-table th:nth-child(2), .invoice-table td:nth-child(2) { text-align: center; width: 20%; }
-        .invoice-table th:nth-child(3), .invoice-table td:nth-child(3) { text-align: center; width: 15%; }
-        .invoice-table th:last-child, .invoice-table td:last-child { text-align: left; width: 20%; font-weight: bold; }
-        .invoice-footer { text-align: center; font-size: 11px; margin-top: 20px; line-height: 1.5; }
-        .print-cut-line { border-top: 1px dashed #666; margin: 15px 0; text-align: center; font-size: 11px; color: #666; }
-        @media print {
-            html, body { width: 80mm; }
-            .receipt-wrapper { width: 72mm; }
-        }
-    </style>
-</head>
-<body>
-    <div class="receipt-wrapper">
-        ${receiptHTML}
-    </div>
-    <script>
-        const triggerReceiptPrint = () => {
-            setTimeout(() => {
-                try { window.print(); } catch(e) {}
-                setTimeout(() => { try { window.close(); } catch(e) {} }, 1000);
-            }, 600);
-        };
-        if (document.readyState === 'complete') {
-            triggerReceiptPrint();
-        } else {
-            window.addEventListener('load', triggerReceiptPrint);
-        }
-    </script>
-</body>
-</html>`;
-
-    const printWindow = window.open('', '_blank', 'width=400,height=600');
-    if (!printWindow) {
-        alert('يرجى السماح بالنوافذ المنبثقة (Popups) لطباعة الوصل.');
-        return;
-    }
-    printWindow.document.write(fullHTML);
-    printWindow.document.close();
 }
 
 let supabaseClient;
@@ -1450,6 +1346,7 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
     };
 
     const hideInfo = (clientName === 'زبون حضوري' && (!phone || phone === '-' || phone === ''));
+    const printPageStyle = `<style>@media print { body > * { display: none !important; } body { display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: flex-start !important; width: 100% !important; margin: 0 !important; padding: 0 !important; background: white !important; } body > #printInvoiceContainer { display: block !important; visibility: visible !important; position: static !important; width: 72mm !important; margin: 0 !important; } @page { size: 80mm auto !important; margin: 0 !important; } }</style>`;
     if (paidAmount !== null && remainingAmount !== null) {
         const customerCopy = createInvoiceBoxHTML('نسخة الزبون (Customer Copy)');
         const shopCopy = createInvoiceBoxHTML('نسخة المحل (Shop Copy)');
@@ -1458,14 +1355,14 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
                 ✂------------------ نسخة المحل / نسخة الزبون ------------------✂
             </div>
         `;
-        printContainer.innerHTML = customerCopy + divider + shopCopy;
+        printContainer.innerHTML = printPageStyle + customerCopy + divider + shopCopy;
         if (hideInfo) {
             printContainer.classList.add('hide-client-info');
         } else {
             printContainer.classList.remove('hide-client-info');
         }
     } else {
-        printContainer.innerHTML = createInvoiceBoxHTML('');
+        printContainer.innerHTML = printPageStyle + createInvoiceBoxHTML('');
         if (hideInfo) {
             printContainer.classList.add('hide-client-info');
         } else {
