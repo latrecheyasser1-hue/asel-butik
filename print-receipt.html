@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>طباعة الوصل - Asel Butik</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        @page {
+            size: 80mm auto;
+            margin: 0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            width: 80mm;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+            background: #fff;
+            color: #000;
+            direction: rtl;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .print-wrap {
+            width: 72mm;
+            padding: 4mm 2mm 10mm 2mm;
+            margin: 0;
+        }
+
+        /* Invoice box styles */
+        .invoice-box {
+            width: 100%;
+            font-family: 'Cairo', sans-serif;
+            color: #000;
+            background: #fff;
+            direction: rtl;
+            text-align: right;
+            margin-bottom: 8px;
+        }
+
+        .invoice-header { text-align: center; margin-bottom: 10px; }
+        .invoice-header h2 { font-size: 16px; font-weight: 800; margin-bottom: 2px; }
+        .invoice-header p { font-size: 11px; margin: 0; color: #555; }
+
+        .invoice-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            font-size: 11px;
+            margin-top: 6px;
+        }
+
+        .invoice-divider {
+            border: none;
+            border-top: 1px dashed #000;
+            margin: 8px 0;
+        }
+
+        .invoice-client-info { font-size: 11px; margin-bottom: 8px; line-height: 1.5; }
+        .invoice-client-info h3 { font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        .invoice-table th {
+            padding: 4px 0;
+            border-bottom: 1px dashed #000;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .invoice-table td {
+            padding: 5px 0;
+            border-bottom: 1px dotted #ccc;
+            text-align: right;
+            vertical-align: top;
+        }
+
+        .invoice-table th:first-child,
+        .invoice-table td:first-child { width: 40%; }
+
+        .invoice-table th:nth-child(2),
+        .invoice-table td:nth-child(2) { width: 20%; text-align: center; }
+
+        .invoice-table th:nth-child(3),
+        .invoice-table td:nth-child(3) { width: 15%; text-align: center; }
+
+        .invoice-table th:last-child,
+        .invoice-table td:last-child { width: 25%; text-align: left; font-weight: 700; }
+
+        .invoice-footer {
+            text-align: center;
+            font-size: 11px;
+            margin-top: 12px;
+            line-height: 1.6;
+            color: #444;
+        }
+
+        .print-cut-line {
+            border-top: 1px dashed #666;
+            margin: 12px 0;
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+        }
+
+        /* Loading state */
+        #loading {
+            text-align: center;
+            padding: 20px;
+            font-family: 'Cairo', sans-serif;
+            font-size: 14px;
+            color: #666;
+        }
+
+        @media print {
+            html, body { width: 80mm; }
+            .print-wrap { width: 72mm; }
+            #loading { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading">⏳ جاري التحضير للطباعة...</div>
+    <div class="print-wrap" id="receipt-content"></div>
+
+    <script>
+        window.addEventListener('load', function() {
+            try {
+                const receiptHTML = localStorage.getItem('asel_print_receipt');
+                if (!receiptHTML) {
+                    document.getElementById('loading').textContent = '❌ لم يتم العثور على بيانات الوصل.';
+                    return;
+                }
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('receipt-content').innerHTML = receiptHTML;
+
+                // Clean up localStorage
+                localStorage.removeItem('asel_print_receipt');
+
+                // Auto-print after fonts load
+                setTimeout(function() {
+                    try {
+                        window.print();
+                    } catch(e) {
+                        console.error('Print error:', e);
+                    }
+                    // Close tab after print dialog closes
+                    setTimeout(function() {
+                        try { window.close(); } catch(e) {}
+                    }, 2000);
+                }, 800);
+
+            } catch(e) {
+                console.error('Receipt load error:', e);
+                document.getElementById('loading').textContent = '❌ خطأ في تحميل الوصل.';
+            }
+        });
+    </script>
+
+</body>
+</html>
