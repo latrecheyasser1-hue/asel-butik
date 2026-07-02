@@ -191,14 +191,14 @@ async function triggerPrint(printerType = 'receipt') {
                 const result = await window.electronAPI.printSilent({ deviceName });
                 if (!result.success) {
                     console.error("Silent receipt print failed:", result.error);
-                    window.print();
+                    printReceiptViaIframe();
                 }
             } catch (err) {
                 console.error("IPC Error:", err);
-                window.print();
+                printReceiptViaIframe();
             }
         } else {
-            window.print();
+            printReceiptViaIframe();
         }
         return;
     }
@@ -208,7 +208,6 @@ async function triggerPrint(printerType = 'receipt') {
         if (printerType === 'barcode') {
             deviceName = localStorage.getItem('barcodePrinterName') || '';
         }
-        
         try {
             let options = { deviceName: deviceName };
             const result = await window.electronAPI.printSilent(options);
@@ -221,8 +220,87 @@ async function triggerPrint(printerType = 'receipt') {
             window.print();
         }
     } else {
-        // Normal web browser mode
         window.print();
+    }
+}
+
+// Print receipt using a hidden iframe — isolated CSS, no popup needed, correct scale for thermal printer
+function printReceiptViaIframe() {
+    const printContainer = document.getElementById('printInvoiceContainer');
+    if (!printContainer) return;
+
+    const receiptHTML = printContainer.innerHTML;
+
+    const fullHTML = `<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>طباعة الوصل</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+@page { size: 80mm auto; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+    width: 80mm;
+    margin: 0; padding: 0;
+    font-family: 'Cairo', sans-serif;
+    background: #fff; color: #000;
+    direction: rtl;
+}
+.print-wrap { width: 72mm; padding: 4mm 4mm 10mm 4mm; margin: 0 auto; }
+.invoice-box { width: 100%; font-family: 'Cairo', sans-serif; color: #000; background: #fff; direction: rtl; text-align: right; }
+.invoice-header { text-align: center; margin-bottom: 10px; }
+.invoice-header h2 { font-size: 16px; font-weight: bold; margin-bottom: 2px; }
+.invoice-header p { font-size: 12px; margin: 0; }
+.invoice-meta { display: flex; justify-content: space-between; font-size: 11px; margin-top: 8px; }
+.invoice-divider { border-top: 1px dashed #000; margin: 8px 0; }
+.invoice-client-info { font-size: 12px; margin-bottom: 10px; line-height: 1.5; }
+.invoice-client-info h3 { font-size: 13px; font-weight: bold; margin-bottom: 4px; }
+.invoice-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.invoice-table th, .invoice-table td { padding: 5px 0; vertical-align: top; }
+.invoice-table th { border-bottom: 1px dashed #000; font-weight: bold; text-align: right; }
+.invoice-table td { border-bottom: 1px dotted #ccc; text-align: right; }
+.invoice-table th:first-child, .invoice-table td:first-child { text-align: right; width: 40%; }
+.invoice-table th:nth-child(2), .invoice-table td:nth-child(2) { text-align: center; width: 20%; }
+.invoice-table th:nth-child(3), .invoice-table td:nth-child(3) { text-align: center; width: 15%; }
+.invoice-table th:last-child, .invoice-table td:last-child { text-align: left; width: 25%; font-weight: bold; }
+.invoice-footer { text-align: center; font-size: 11px; margin-top: 16px; line-height: 1.5; }
+.print-cut-line { border-top: 1px dashed #666; margin: 12px 0; text-align: center; font-size: 10px; color: #666; }
+</style>
+</head>
+<body>
+<div class="print-wrap">${receiptHTML}</div>
+</body>
+</html>`;
+
+    // Create invisible iframe
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;';
+    document.body.appendChild(iframe);
+
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    iframeDoc.open();
+    iframeDoc.write(fullHTML);
+    iframeDoc.close();
+
+    const doIframePrint = () => {
+        setTimeout(() => {
+            try {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+            } catch(e) {
+                console.error('iframe print error:', e);
+            }
+            setTimeout(() => {
+                try { document.body.removeChild(iframe); } catch(e) {}
+            }, 2000);
+        }, 700);
+    };
+
+    if (iframe.contentDocument.readyState === 'complete') {
+        doIframePrint();
+    } else {
+        iframe.contentWindow.addEventListener('load', doIframePrint);
     }
 }
 

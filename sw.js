@@ -1,4 +1,4 @@
-const CACHE_NAME = 'asel-butik-cache-v29';
+const CACHE_NAME = 'asel-butik-cache-v30';
 const STATIC_ASSETS = [
     '/',
     '/index.html',
