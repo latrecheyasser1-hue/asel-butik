@@ -273,9 +273,9 @@ html, body {
 </body>
 </html>`;
 
-    // Create invisible iframe
+    // Create off-screen iframe with proper 80mm width — 0x0 causes tiny render!
     const iframe = document.createElement('iframe');
-    iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;visibility:hidden;';
+    iframe.style.cssText = 'position:fixed;left:-1000px;top:0;width:302px;height:800px;border:0;';
     document.body.appendChild(iframe);
 
     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
