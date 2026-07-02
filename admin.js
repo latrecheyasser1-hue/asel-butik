@@ -1624,7 +1624,7 @@ async function printProductBarcodeLabel(product) {
         return;
     }
 
-    // Label size: 30mm x 28mm — everything must fit tight
+    // Label size: 30mm x 28mm — centered, no rtl shift, slightly bigger
     barcodeContainer.innerHTML = `
         <div style="
             width: 30mm;
@@ -1634,18 +1634,17 @@ async function printProductBarcodeLabel(product) {
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 1mm 1mm 0.5mm 1mm;
+            padding: 1.5mm 1.5mm 1.5mm 1.5mm;
             box-sizing: border-box;
-            font-family: 'Cairo', Arial, sans-serif;
+            font-family: Arial, sans-serif;
             text-align: center;
-            direction: rtl;
             background: white;
             color: black;
         ">
-            <div style="font-size:7pt; font-weight:800; line-height:1.1; margin-bottom:0.5mm; color:#000;">Asel Butik</div>
-            <div style="font-size:6.5pt; font-weight:600; line-height:1.1; margin-bottom:0.5mm; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">${product.name}</div>
-            <div style="font-size:7pt; font-weight:800; line-height:1.1; margin-bottom:0.5mm;">${priceFormatted}</div>
-            <svg id="barcode-svg" style="display:block; width:28mm; height:auto; max-height:14mm;"></svg>
+            <div style="font-size:8.5pt; font-weight:800; line-height:1.2; margin-bottom:0.8mm; color:#000; letter-spacing:0.3px;">Asel Butik</div>
+            <div style="font-size:8pt; font-weight:600; line-height:1.2; margin-bottom:0.8mm; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">${product.name}</div>
+            <div style="font-size:8.5pt; font-weight:800; line-height:1.2; margin-bottom:1mm;">${priceFormatted}</div>
+            <svg id="barcode-svg" style="display:block; width:27mm; height:auto; max-height:13mm;"></svg>
         </div>
     `;
 
@@ -1653,8 +1652,8 @@ async function printProductBarcodeLabel(product) {
         JsBarcode("#barcode-svg", product.barcode, {
             format: "CODE128",
             lineColor: "#000",
-            width: 1,
-            height: 28,
+            width: 1.1,
+            height: 30,
             displayValue: true,
             font: "Arial",
             fontSize: 7,
