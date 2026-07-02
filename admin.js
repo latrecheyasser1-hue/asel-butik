@@ -202,10 +202,11 @@ async function triggerPrint(printerType = 'receipt') {
         document.head.appendChild(pageStyle);
     }
     if (printerType === 'receipt') {
-        pageStyle.textContent = '@media print { @page { size: 80mm auto; margin: 0; } }';
+        pageStyle.textContent = '@media print { @page { size: 80mm auto; margin: 0; } html, body { width: 80mm !important; max-width: 80mm !important; direction: rtl !important; } }';
     } else {
         // 30mm x 28mm barcode label (1.18in x 1.10in)
-        pageStyle.textContent = '@media print { @page { size: 30mm 28mm; margin: 0; } }';
+        // Force LTR to shift page alignment from right to left, centering it on the physical sticker roll
+        pageStyle.textContent = '@media print { @page { size: 30mm 28mm; margin: 0; } html, body { width: 30mm !important; max-width: 30mm !important; direction: ltr !important; margin: 0 auto !important; } }';
     }
 
     if (window.electronAPI && window.electronAPI.printSilent) {
@@ -1643,7 +1644,7 @@ async function printProductBarcodeLabel(product) {
         ">
             <div style="font-size:8.5pt; font-weight:800; line-height:1.2; margin-bottom:0.8mm; color:#000; letter-spacing:0.3px;">Asel Butik</div>
             <div style="font-size:8pt; font-weight:600; line-height:1.2; margin-bottom:0.8mm; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">${product.name}</div>
-            <div style="font-size:8.5pt; font-weight:800; line-height:1.2; margin-bottom:1mm;">${priceFormatted}</div>
+            <div style="font-size:8.5pt; font-weight:800; line-height:1.2; margin-bottom:1mm; direction: rtl;">${priceFormatted}</div>
             <svg id="barcode-svg" style="display:block; width:27mm; height:auto; max-height:13mm;"></svg>
         </div>
     `;
