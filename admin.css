@@ -869,7 +869,7 @@ body {
         background-color: white !important;
     }
     
-    body > #printInvoiceContainer, body > #printBarcodeContainer, .print-only {
+    body > #printInvoiceContainer, .print-only {
         display: block !important;
         visibility: visible !important;
         position: static !important;
@@ -879,6 +879,21 @@ body {
         padding: 4mm 4mm 10mm 4mm !important;
         box-sizing: border-box !important;
         background-color: white !important;
+    }
+
+    body > #printBarcodeContainer {
+        display: flex !important;
+        visibility: visible !important;
+        position: static !important;
+        width: 30mm !important;
+        height: 28mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-sizing: border-box !important;
+        background-color: white !important;
+        overflow: hidden !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
 
     .invoice-box {

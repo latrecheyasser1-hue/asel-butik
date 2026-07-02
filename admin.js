@@ -193,6 +193,21 @@ async function triggerPrint(printerType = 'receipt') {
         if (barcodeContainer) barcodeContainer.style.setProperty('display', 'flex', 'important');
     }
 
+    // Inject correct @page size for this print type
+    const pageStyleId = '__asel_print_page_style__';
+    let pageStyle = document.getElementById(pageStyleId);
+    if (!pageStyle) {
+        pageStyle = document.createElement('style');
+        pageStyle.id = pageStyleId;
+        document.head.appendChild(pageStyle);
+    }
+    if (printerType === 'receipt') {
+        pageStyle.textContent = '@media print { @page { size: 80mm auto; margin: 0; } }';
+    } else {
+        // 30mm x 28mm barcode label (1.18in x 1.10in)
+        pageStyle.textContent = '@media print { @page { size: 30mm 28mm; margin: 0; } }';
+    }
+
     if (window.electronAPI && window.electronAPI.printSilent) {
         let deviceName = '';
         if (printerType === 'receipt') {
@@ -200,12 +215,10 @@ async function triggerPrint(printerType = 'receipt') {
         } else if (printerType === 'barcode') {
             deviceName = localStorage.getItem('barcodePrinterName') || '';
         }
-        
         try {
             const result = await window.electronAPI.printSilent({ deviceName: deviceName });
             if (!result.success) {
                 console.error('Silent print failed:', result.error);
-                // Fallback if silent print fails completely for some reason
                 window.print();
             }
         } catch (e) {
@@ -216,6 +229,13 @@ async function triggerPrint(printerType = 'receipt') {
         // Normal web browser mode
         window.print();
     }
+
+    // Reset page style after print dialog closes
+    setTimeout(() => {
+        if (pageStyle) pageStyle.textContent = '';
+        if (invoiceContainer) invoiceContainer.style.removeProperty('display');
+        if (barcodeContainer) barcodeContainer.style.removeProperty('display');
+    }, 2000);
 }
 
 let supabaseClient;
@@ -1604,12 +1624,28 @@ async function printProductBarcodeLabel(product) {
         return;
     }
 
+    // Label size: 30mm x 28mm — everything must fit tight
     barcodeContainer.innerHTML = `
-        <div class="label-container" style="display:flex; flex-direction:column; align-items:center; justify-content:center; width: 100%; max-width: 320px; margin: 0 auto; padding-top: 5px; text-align: center; direction: rtl; font-family: 'Cairo', sans-serif;">
-            <div style="font-size:14px; font-weight:700; color:#d4af37; margin-bottom:2px;">Asel Butik</div>
-            <div style="font-size:13px; font-weight:600; margin:2px 0; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${product.name}</div>
-            <div style="font-size:14px; font-weight:700; margin:2px 0 6px 0;">السعر: ${priceFormatted}</div>
-            <svg id="barcode-svg" style="width:100%; max-height:70px;"></svg>
+        <div style="
+            width: 30mm;
+            height: 28mm;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1mm 1mm 0.5mm 1mm;
+            box-sizing: border-box;
+            font-family: 'Cairo', Arial, sans-serif;
+            text-align: center;
+            direction: rtl;
+            background: white;
+            color: black;
+        ">
+            <div style="font-size:7pt; font-weight:800; line-height:1.1; margin-bottom:0.5mm; color:#000;">Asel Butik</div>
+            <div style="font-size:6.5pt; font-weight:600; line-height:1.1; margin-bottom:0.5mm; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;">${product.name}</div>
+            <div style="font-size:7pt; font-weight:800; line-height:1.1; margin-bottom:0.5mm;">${priceFormatted}</div>
+            <svg id="barcode-svg" style="display:block; width:28mm; height:auto; max-height:14mm;"></svg>
         </div>
     `;
 
@@ -1617,23 +1653,23 @@ async function printProductBarcodeLabel(product) {
         JsBarcode("#barcode-svg", product.barcode, {
             format: "CODE128",
             lineColor: "#000",
-            width: 2,
-            height: 50,
+            width: 1,
+            height: 28,
             displayValue: true,
-            font: "Cairo",
-            fontSize: 14,
-            fontOptions: "bold",
-            textMargin: 2,
-            margin: 2
+            font: "Arial",
+            fontSize: 7,
+            fontOptions: "",
+            textMargin: 1,
+            margin: 0
         });
     } catch(e) {
         console.error("JsBarcode generation failed:", e);
     }
     
-    // Allow DOM to update
+    // Allow DOM to update before printing
     setTimeout(() => {
         triggerPrint('barcode');
-    }, 100);
+    }, 150);
 }
 
 // Setup Product add/edit modal form
