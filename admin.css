@@ -842,18 +842,7 @@ body {
     padding-right: 4px !important;
 }
 
-@page {
-    size: 80mm auto !important;
-    margin: 0 !important;
-}
-
 @media print {
-    /* Tell Chrome the physical page is 80mm wide — fixes tiny preview */
-    @page {
-        size: 80mm auto;
-        margin: 0;
-    }
-
     /* Completely remove layout space of non-print elements */
     body > * {
         display: none !important;
@@ -861,9 +850,7 @@ body {
     
     html, body {
         display: block !important;
-        width: 80mm !important;
         min-width: 0 !important;
-        max-width: 80mm !important;
         margin: 0 !important;
         padding: 0 !important;
         background-color: white !important;
@@ -887,7 +874,7 @@ body {
         position: static !important;
         width: 30mm !important;
         height: 28mm !important;
-        margin: 0 !important;
+        margin: 0 auto !important;
         padding: 0 !important;
         box-sizing: border-box !important;
         background-color: white !important;
