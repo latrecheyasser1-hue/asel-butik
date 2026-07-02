@@ -1634,8 +1634,8 @@ async function printProductBarcodeLabel(product) {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 1.5mm 1.5mm 1.5mm 1.5mm;
+            justify-content: flex-start;
+            padding: 0.8mm 1.5mm 2mm 1.5mm;
             box-sizing: border-box;
             font-family: Arial, sans-serif;
             text-align: center;
