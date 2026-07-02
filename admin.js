@@ -1267,7 +1267,7 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
 
     const createInvoiceBoxHTML = (copyTitle) => {
         let totalHTML = `
-            <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; margin-top: 10px;">
+            <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 16px; margin-top: 10px; color: #000;">
                 <span>المجموع الإجمالي:</span>
                 <span>${Number(items.reduce((sum, item) => sum + Number(item.total_price), 0)).toLocaleString('ar-DZ')} د.ج</span>
             </div>
@@ -1275,15 +1275,15 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
 
         if (paidAmount !== null && remainingAmount !== null) {
             totalHTML = `
-                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; margin-top: 8px;">
+                <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 16px; margin-top: 8px; color: #000;">
                     <span>المجموع الإجمالي:</span>
                     <span>${Number(items.reduce((sum, item) => sum + Number(item.total_price), 0)).toLocaleString('ar-DZ')} د.ج</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; color: var(--success-color); margin-top: 4px;">
+                <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 16px; color: #000; margin-top: 4px;">
                     <span>المبلغ المدفوع (عربون):</span>
                     <span>${Number(paidAmount).toLocaleString('ar-DZ')} د.ج</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 15px; color: var(--danger-color); margin-top: 4px; border-top: 1px solid #ddd; padding-top: 4px;">
+                <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 17px; color: #000; margin-top: 4px; border-top: 1.5px solid #000; padding-top: 4px;">
                     <span>الدين المتبقي:</span>
                     <span>${Number(remainingAmount).toLocaleString('ar-DZ')} د.ج</span>
                 </div>
@@ -1291,48 +1291,48 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
         }
 
         const itemsRows = items.map(item => `
-            <tr>
-                <td style="padding: 6px 0;">${item.product_name}</td>
-                <td style="padding: 6px 0;">${item.color}</td>
-                <td style="padding: 6px 0;">${item.size}</td>
-                <td style="padding: 6px 0;">${Number(item.total_price).toLocaleString('ar-DZ')} د.ج</td>
+            <tr style="border-bottom: 1px dashed #000;">
+                <td style="padding: 8px 0; font-weight: 700; color: #000;">${item.product_name}</td>
+                <td style="padding: 8px 0; font-weight: 700; color: #000; text-align: center;">${item.color}</td>
+                <td style="padding: 8px 0; font-weight: 700; color: #000; text-align: center;">${item.size}</td>
+                <td style="padding: 8px 0; font-weight: 800; color: #000; text-align: left;">${Number(item.total_price).toLocaleString('ar-DZ')} د.ج</td>
             </tr>
         `).join('');
 
         return `
-            <div class="invoice-box" style="margin-bottom: 20px; text-align: right; direction: rtl; font-family: 'Cairo', sans-serif;">
-                <div class="invoice-header" style="text-align: center;">
-                    <h2 style="font-size: 18px; font-weight: bold; margin-bottom: 2px;">Asel Butik</h2>
-                    <p style="font-size: 13px; color: #666; margin-bottom: 5px;">للأزياء النسائية الفاخرة</p>
-                    ${copyTitle ? `<div style="text-align: center; margin-bottom: 8px; font-weight: bold; font-size: 13px; background: #f1f2f6; padding: 4px 10px; border-radius: 4px; display: inline-block;">${copyTitle}</div>` : ''}
-                    <div class="invoice-meta" style="font-size: 13px; margin-top: 5px; display: flex; flex-direction: column; gap: 3px;">
-                        <div><strong>رقم الوصل:</strong> <span>${invoiceNum}</span></div>
-                        <div><strong>التاريخ:</strong> <span>${new Date(printedAt).toLocaleDateString('ar-DZ', {
+            <div class="invoice-box" style="margin-bottom: 20px; text-align: right; direction: rtl; font-family: 'Cairo', Arial, sans-serif; color: #000; font-weight: 700;">
+                <div class="invoice-header" style="text-align: center; color: #000;">
+                    <h2 style="font-size: 24px; font-weight: 900; margin-bottom: 2px; color: #000;">Asel Butik</h2>
+                    <p style="font-size: 15px; color: #000; font-weight: 800; margin-bottom: 5px;">للأزياء النسائية الفاخرة</p>
+                    ${copyTitle ? `<div style="text-align: center; margin-bottom: 8px; font-weight: 900; font-size: 15px; background: #e1e2e6; color: #000; padding: 4px 10px; border-radius: 4px; display: inline-block;">${copyTitle}</div>` : ''}
+                    <div class="invoice-meta" style="font-size: 15px; margin-top: 5px; display: flex; flex-direction: column; gap: 3px; color: #000;">
+                        <div><strong>رقم الوصل:</strong> <span style="font-weight: 800;">${invoiceNum}</span></div>
+                        <div><strong>التاريخ:</strong> <span style="font-weight: 800;">${new Date(printedAt).toLocaleDateString('ar-DZ', {
                             hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'numeric', year: 'numeric'
                         })}</span></div>
                     </div>
                 </div>
                 
-                <div class="invoice-divider" style="border-top: 1px solid #ddd; margin: 8px 0;"></div>
+                <div class="invoice-divider" style="border-top: 1.5px solid #000; margin: 8px 0;"></div>
                 
-                <div class="invoice-client-info" style="font-size: 13px; line-height: 1.6; text-align: right;">
-                    <h3 style="font-size: 14px; font-weight: bold; margin-bottom: 5px;">معلومات الزبون</h3>
-                    <div><strong>الاسم واللقب:</strong> <span>${clientName || '-'}</span></div>
-                    <div><strong>رقم الهاتف:</strong> <span>${phone || '-'}</span></div>
-                    ${(wilaya && wilaya !== 'المحل' && wilaya !== '-') ? `<div><strong>الولاية:</strong> <span>${wilaya}</span></div>` : ''}
-                    ${(baladiya && baladiya !== 'المحل' && baladiya !== '-') ? `<div><strong>البلدية:</strong> <span>${baladiya}</span></div>` : ''}
-                    ${(deliveryType && deliveryType !== 'استلام من المحل' && deliveryType !== '-') ? `<div><strong>نوع التوصيل:</strong> <span>${deliveryType}</span></div>` : ''}
+                <div class="invoice-client-info" style="font-size: 15px; line-height: 1.6; text-align: right; color: #000;">
+                    <h3 style="font-size: 16px; font-weight: 900; margin-bottom: 5px; color: #000;">معلومات الزبون</h3>
+                    <div><strong>الاسم واللقب:</strong> <span style="font-weight: 800;">${clientName || '-'}</span></div>
+                    <div><strong>رقم الهاتف:</strong> <span style="font-weight: 800;">${phone || '-'}</span></div>
+                    ${(wilaya && wilaya !== 'المحل' && wilaya !== '-') ? `<div><strong>الولاية:</strong> <span style="font-weight: 800;">${wilaya}</span></div>` : ''}
+                    ${(baladiya && baladiya !== 'المحل' && baladiya !== '-') ? `<div><strong>البلدية:</strong> <span style="font-weight: 800;">${baladiya}</span></div>` : ''}
+                    ${(deliveryType && deliveryType !== 'استلام من المحل' && deliveryType !== '-') ? `<div><strong>نوع التوصيل:</strong> <span style="font-weight: 800;">${deliveryType}</span></div>` : ''}
                 </div>
 
-                <div class="invoice-divider" style="border-top: 1px solid #ddd; margin: 8px 0;"></div>
+                <div class="invoice-divider" style="border-top: 1.5px solid #000; margin: 8px 0;"></div>
 
-                <table class="invoice-table" style="width: 100%; font-size: 13px; text-align: right; border-collapse: collapse;">
+                <table class="invoice-table" style="width: 100%; font-size: 15px; text-align: right; border-collapse: collapse; color: #000;">
                     <thead>
-                        <tr style="border-bottom: 1px solid #ddd; font-weight: bold;">
-                            <th style="padding: 6px 0; text-align: right;">المنتج</th>
-                            <th style="padding: 6px 0; text-align: right;">اللون</th>
-                            <th style="padding: 6px 0; text-align: right;">المقاس</th>
-                            <th style="padding: 6px 0; text-align: right;">المجموع</th>
+                        <tr style="border-bottom: 1.5px solid #000; font-weight: 900;">
+                            <th style="padding: 6px 0; text-align: right; font-weight: 900; color: #000;">المنتج</th>
+                            <th style="padding: 6px 0; text-align: center; font-weight: 900; color: #000;">اللون</th>
+                            <th style="padding: 6px 0; text-align: center; font-weight: 900; color: #000;">المقاس</th>
+                            <th style="padding: 6px 0; text-align: left; font-weight: 900; color: #000;">المجموع</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1340,19 +1340,19 @@ function setupInvoicePrintView(invoiceNum, printedAt, clientName, phone, wilaya,
                     </tbody>
                 </table>
 
-                <div class="invoice-divider" style="border-top: 1px solid #ddd; margin: 8px 0;"></div>
+                <div class="invoice-divider" style="border-top: 1.5px solid #000; margin: 8px 0;"></div>
 
                 ${totalHTML}
 
-                <div class="invoice-divider" style="border-top: 1px solid #ddd; margin: 8px 0;"></div>
+                <div class="invoice-divider" style="border-top: 1.5px solid #000; margin: 8px 0;"></div>
 
-                <div class="invoice-footer" style="text-align: center; font-size: 12px; line-height: 1.4; color: #555;">
-                    <div style="margin: 10px auto; padding: 6px 8px; border: 1px dashed #777; border-radius: 4px; background-color: #fcfcfc; color: #111; font-size: 11px; line-height: 1.5; text-align: center;">
-                        <div style="font-weight: bold; margin-bottom: 2px;">تنبيه:</div>
-                        <div>السلع المباعة تُستبدل ولا تُرد خلال مدة أقصاها 48 ساعة من تاريخ الشراء، مع إحضار فاتورة الشراء.</div>
+                <div class="invoice-footer" style="text-align: center; font-size: 14px; line-height: 1.4; color: #000;">
+                    <div style="margin: 10px auto; padding: 6px 8px; border: 1.5px dashed #000; border-radius: 4px; background-color: #fcfcfc; color: #000; font-size: 13px; line-height: 1.5; text-align: center;">
+                        <div style="font-weight: 900; margin-bottom: 2px;">تنبيه:</div>
+                        <div style="font-weight: 700;">السلع المباعة تُستبدل ولا تُرد خلال مدة أقصاها 48 ساعة من تاريخ الشراء، مع إحضار فاتورة الشراء.</div>
                     </div>
-                    <p style="margin: 4px 0;">شكراً لثقتكم بـ Asel Butik!</p>
-                    <p style="margin: 4px 0;">لأي استفسار يرجى الاتصال بنا على: ${websiteSettings && websiteSettings.phone_number ? websiteSettings.phone_number : '0555123456'}</p>
+                    <p style="margin: 4px 0; font-weight: 800;">شكراً لثقتكم بـ Asel Butik!</p>
+                    <p style="margin: 4px 0; font-weight: 800;">لأي استفسار يرجى الاتصال بنا على: ${websiteSettings && websiteSettings.phone_number ? websiteSettings.phone_number : '0555123456'}</p>
                 </div>
             </div>
         `;
